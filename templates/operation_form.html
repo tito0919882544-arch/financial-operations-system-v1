@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}{% if op %}تعديل{% else %}إضافة{% endif %} {{ TYPE_LABELS[op_type] }}{% endblock %}
+{% block page_title %}{% if op %}تعديل {{ op.op_no }}{% else %}إضافة {{ TYPE_LABELS[op_type] }} جديدة{% endif %}{% endblock %}
+{% block content %}
+<section class="panel form-panel">
+<form method="post" enctype="multipart/form-data" class="form grid-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div>
+        <label>العنوان</label>
+        <input name="title" value="{{ op.title if op else TYPE_LABELS[op_type] }}" required>
+    </div>
+    <div>
+        <label>البند / التصنيف</label>
+        <input name="category" value="{{ op.category if op else '' }}" placeholder="مثال: اتصالات / وقود / إيراد يومي">
+    </div>
+    <div>
+        <label>المبلغ</label>
+        <input name="amount" type="number" step="0.01" value="{{ op.amount if op else '' }}" required>
+    </div>
+    <div>
+        <label>المبلغ المخصص للبند - اختياري</label>
+        <input name="allocated_amount" type="number" step="0.01" value="{{ op.allocated_amount if op and op.allocated_amount else '' }}">
+    </div>
+    <div class="full-row">
+        <label>الوصف / الملاحظات</label>
+        <textarea name="description" rows="5">{{ op.description if op else '' }}</textarea>
+    </div>
+    <div class="full-row">
+        <label>المرفق</label>
+        <input name="attachment" type="file" accept=".pdf,.jpg,.jpeg,.png">
+        {% if op and op.attachment_path %}<small>المرفق الحالي: {{ op.attachment_path }}</small>{% endif %}
+    </div>
+    <div class="form-actions full-row">
+        <button class="btn primary">حفظ وإرسال للمراجعة</button>
+        <a class="btn ghost" href="{{ url_for('main.operations_list', op_type=op_type) }}">رجوع</a>
+    </div>
+</form>
+</section>
+{% endblock %}

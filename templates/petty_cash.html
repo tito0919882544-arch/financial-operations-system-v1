@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}النثرية الشهرية{% endblock %}
+{% block page_title %}النثرية الشهرية — {{ month_key }}{% endblock %}
+{% block content %}
+<section class="panel">
+<table class="table">
+    <thead><tr><th>البند</th><th>المبلغ المخصص</th><th>المصروف</th><th>المتبقي</th><th>الحالة</th></tr></thead>
+    <tbody>
+    {% for row in rows %}
+    {% set remaining = row.allocated_amount - row.spent_amount %}
+    <tr>
+        <td>{{ row.category }}</td>
+        <td>{{ "{:,.0f}".format(row.allocated_amount) }}</td>
+        <td>{{ "{:,.0f}".format(row.spent_amount) }}</td>
+        <td>{{ "{:,.0f}".format(remaining) }}</td>
+        <td>
+            {% if remaining <= 0 %}<span class="status status-danger">نافد</span>
+            {% elif remaining <= row.allocated_amount * 0.15 %}<span class="status status-warn">اقترب من النفاد</span>
+            {% else %}<span class="status status-ok">نشط</span>{% endif %}
+        </td>
+    </tr>
+    {% else %}<tr><td colspan="5" class="empty">لا توجد بنود لهذا الشهر.</td></tr>{% endfor %}
+    </tbody>
+</table>
+</section>
+{% endblock %}

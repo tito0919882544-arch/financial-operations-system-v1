@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8">
+    <title>طباعة {{ op.op_no }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="print-body">
+<div class="print-page">
+    <header class="print-header">
+        <div>
+            <h1>{{ op.company_name }}</h1>
+            <h2>{{ op.station_name }}</h2>
+        </div>
+        <div class="print-no">{{ op.op_no }}</div>
+    </header>
+
+    <h3 class="print-title">نموذج {{ TYPE_LABELS[op.op_type] }}</h3>
+
+    <table class="print-table">
+        <tr><th>رقم العملية</th><td>{{ op.op_no }}</td><th>الحالة</th><td>{{ STATUS_LABELS[op.status] }}</td></tr>
+        <tr><th>العنوان</th><td>{{ op.title }}</td><th>البند</th><td>{{ op.category or '-' }}</td></tr>
+        <tr><th>المبلغ</th><td>{{ "{:,.0f}".format(op.amount) }}</td><th>التاريخ</th><td>{{ op.created_at }}</td></tr>
+        <tr><th>منشئ العملية</th><td>{{ op.creator_name }}</td><th>المدير المعتمد</th><td>{{ op.reviewer_name or '-' }}</td></tr>
+        <tr><th>ملاحظة المدير</th><td colspan="3">{{ op.manager_note or '-' }}</td></tr>
+        <tr><th>الوصف</th><td colspan="3">{{ op.description or '-' }}</td></tr>
+    </table>
+
+    <div class="signatures">
+        <div>توقيع المتحصل<br><span>............................</span></div>
+        <div>توقيع مدير المحطة<br><span>............................</span></div>
+        <div>الختم<br><span>............................</span></div>
+    </div>
+</div>
+<script>window.print();</script>
+</body>
+</html>

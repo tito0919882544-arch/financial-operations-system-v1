@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}المستخدمون{% endblock %}
+{% block page_title %}إدارة المستخدمين{% endblock %}
+{% block content %}
+<div class="detail-grid">
+<section class="panel form-panel">
+    <div class="panel-head"><h3>إضافة مستخدم</h3></div>
+    <form method="post" class="form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label>اسم المستخدم</label><input name="username" required>
+        <label>الاسم الكامل</label><input name="full_name" required>
+        <label>كلمة المرور</label><input name="password" type="password" required>
+        <label>الدور</label>
+        <select name="role" required>
+            <option value="collector">متحصل</option>
+            <option value="manager">مدير محطة</option>
+            <option value="super_admin">سوبر أدمن</option>
+        </select>
+        <label>المحطة</label>
+        <select name="station_id">
+            <option value="">بدون محطة</option>
+            {% for s in stations %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}
+        </select>
+        <label>IP مسموح - اختياري</label><input name="allowed_ip" placeholder="مثال: 192.168.210.100">
+        <button class="btn primary full">إنشاء</button>
+    </form>
+</section>
+<section class="panel wide">
+    <div class="panel-head"><h3>قائمة المستخدمين</h3></div>
+    <table class="table">
+        <thead><tr><th>المستخدم</th><th>الاسم</th><th>الدور</th><th>المحطة</th><th>IP</th><th>الحالة</th></tr></thead>
+        <tbody>
+        {% for row in rows %}
+        <tr><td>{{ row.username }}</td><td>{{ row.full_name }}</td><td>{{ row.role }}</td><td>{{ row.station_name or '-' }}</td><td>{{ row.allowed_ip or '-' }}</td><td>{{ 'نشط' if row.active else 'معطل' }}</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</section>
+</div>
+{% endblock %}
