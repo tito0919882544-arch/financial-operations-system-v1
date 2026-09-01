@@ -1,68 +1,76 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="theme-color" content="#0b2239">
-    <title>تسجيل الدخول | نظام العمليات المالية</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f3f5f7">
+<title>{{ system_name }}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body class="login-body">
-    <div class="login-background-orb orb-one"></div>
-    <div class="login-background-orb orb-two"></div>
+<div class="login-background-orb orb-one"></div>
+<div class="login-background-orb orb-two"></div>
+<main class="login-layout">
+    <section class="login-intro">
+        <div class="login-brand-mark">
+            {% if SYSTEM_SETTINGS.get("institution_logo") %}
+                <img src="{{ url_for('main.uploads', filename=SYSTEM_SETTINGS.get('institution_logo')) }}" alt="شعار المؤسسة">
+            {% else %}
+                م
+            {% endif %}
+        </div>
+        <div class="eyebrow light">FINANCIAL OPERATIONS SYSTEM</div>
+        <h1>{{ system_name }}</h1>
+        <p>{{ SYSTEM_SETTINGS.get("login_description", "منصة موحدة لإدارة النثرية والاعتمادات والمستحقات والرقابة المالية.") }}</p>
+        <div class="login-trust-list">
+            <div><span>✓</span> إدارة مالية منظمة</div>
+            <div><span>✓</span> صلاحيات حسب الدور</div>
+            <div><span>✓</span> متابعة وتدقيق للعمليات</div>
+        </div>
+    </section>
 
-    <main class="login-layout">
-        <section class="login-intro">
-            <div class="login-brand-mark">د</div>
-            <div class="eyebrow light">FINANCIAL OPERATIONS SYSTEM</div>
-            <h1>نظام العمليات المالية</h1>
-            <p>منصة داخلية لإدارة العمليات المالية والاعتمادات والرقابة على حركة المحطة.</p>
-            <div class="login-trust-list">
-                <div><span>✓</span> مسارات اعتماد ومراجعة واضحة</div>
-                <div><span>✓</span> سجل حركة وتدقيق للعمليات</div>
-                <div><span>✓</span> صلاحيات مرتبطة بالدور والمحطة</div>
+    <section class="login-card">
+        <div class="login-card-head">
+            <div>
+                <span class="section-kicker">الوصول إلى النظام</span>
+                <h2>{{ SYSTEM_SETTINGS.get("login_title", "تسجيل الدخول") }}</h2>
+                <p>{{ SYSTEM_SETTINGS.get("login_subtitle", "الوصول الآمن إلى نظام العمليات المالية") }}</p>
             </div>
-        </section>
+            <div class="login-modern-icon" aria-hidden="true">✓</div>
+        </div>
 
-        <section class="login-card">
-            <div class="login-card-head">
-                <div>
-                    <span class="section-kicker">الدخول الآمن</span>
-                    <h2>مرحباً بك</h2>
-                    <p>أدخل بيانات حسابك للوصول إلى النظام.</p>
-                </div>
-                <div class="login-mini-mark">د</div>
-            </div>
-
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    <div class="messages login-messages">
-                        {% for category, message in messages %}
+        {% with messages=get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="messages login-messages">
+                    {% for category, message in messages %}
                         <div class="message {{ category }}"><span class="message-dot"></span>{{ message }}</div>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-            {% endwith %}
-
-            <form method="post" class="form login-form">
-                <div class="field-group">
-                    <label for="username">اسم المستخدم</label>
-                    <input id="username" name="username" required autocomplete="username" placeholder="أدخل اسم المستخدم">
+                    {% endfor %}
                 </div>
-                <div class="field-group">
-                    <label for="password">كلمة المرور</label>
-                    <input id="password" name="password" type="password" required autocomplete="current-password" placeholder="أدخل كلمة المرور">
-                </div>
-                <button class="btn primary full login-submit" type="submit">دخول إلى النظام <span>←</span></button>
-            </form>
+            {% endif %}
+        {% endwith %}
 
-            <div class="login-security-note">
-                <span class="lock-icon">▣</span>
-                <div><strong>بيئة مالية داخلية</strong><small>يتم تسجيل العمليات وفق صلاحيات المستخدم ومسار المراجعة.</small></div>
+        <form method="post" class="form login-form" autocomplete="on">
+            <div class="field-group">
+                <label for="username">اسم المستخدم</label>
+                <input id="username" name="username" required autocomplete="username" placeholder="أدخل اسم المستخدم">
             </div>
-        </section>
-    </main>
+            <div class="field-group">
+                <label for="password">كلمة المرور</label>
+                <input id="password" name="password" type="password" required autocomplete="current-password" placeholder="أدخل كلمة المرور">
+            </div>
+            <button class="btn primary full login-submit" type="submit">دخول <span>←</span></button>
+        </form>
 
-    <footer class="login-footer">نظام العمليات المالية • Financial Operations System v1.0</footer>
+        <div class="login-forgot"><a href="{{ url_for('main.forgot_password') }}">نسيت كلمة المرور؟</a></div>
+        <div class="login-security-note">
+            <span class="shield-mini">✓</span>
+            <div>
+                <strong>{{ system_name }}</strong>
+                <small>{{ SYSTEM_SETTINGS.get("login_security_text", "واجهة وصول موحدة للمستخدمين المصرح لهم.") }}</small>
+            </div>
+        </div>
+    </section>
+</main>
+<footer class="login-footer">{{ system_name }} • {{ SYSTEM_SETTINGS.get("system_tagline", "Financial Operations System") }} v1.0</footer>
 </body>
 </html>

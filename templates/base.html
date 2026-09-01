@@ -1,97 +1,220 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="theme-color" content="#0b2239">
-    <title>{% block title %}نظام العمليات المالية{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#eef1f3"><title>{% block title %}{{ system_name }}{% endblock %}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<style id="active-theme">{% if SYSTEM_SETTINGS.get("theme") == "Dark Professional" %}:root{--bg:#0b1220;--surface:#121c2b;--surface-soft:#182538;--text:#e8eef5;--muted:#9fb0c2;--line:#27384d;--line-strong:#3a5068}body{background:var(--bg);color:var(--text)}.panel,.topbar,.sidebar{background:var(--surface)}input,select,textarea{background:#0f1927;color:#e8eef5}{% elif SYSTEM_SETTINGS.get("theme") == "رسمي فاخر" %}:root{--primary:#6b4f1d;--primary-dark:#4f3a14;--surface:#fffdf8;--surface-soft:#f8f3e8}{% elif SYSTEM_SETTINGS.get("theme") == "شبابي فاخر" %}:root{--primary:#7c3aed;--primary-dark:#5b21b6;--surface-soft:#f7f3ff}{% elif SYSTEM_SETTINGS.get("theme") == "عصري" %}:root{--primary:#0e7490;--primary-dark:#155e75;--surface-soft:#f0fdfa}{% elif SYSTEM_SETTINGS.get("theme") == "Minimal" %}:root{--primary:#334155;--primary-dark:#1e293b;--surface-soft:#f8fafc;--line:#e2e8f0}.panel,.stat-card,.template-card{box-shadow:none;border-radius:10px}{% elif SYSTEM_SETTINGS.get("theme") == "Executive" %}:root{--primary:#17324d;--primary-dark:#0f2438;--surface-soft:#eef3f7}.panel,.stat-card,.template-card{border-radius:8px;box-shadow:0 8px 24px rgba(15,36,56,.08)}{% elif SYSTEM_SETTINGS.get("theme") == "طبقات عائمة" %}:root{--bg:#f2f4f6;--surface:rgba(255,255,255,.78);--surface-soft:rgba(255,255,255,.58);--text:#172536;--muted:#657487;--line:rgba(20,43,66,.12);--line-strong:rgba(20,43,66,.20);--primary:#173b5c;--primary-dark:#102d46;--blue:#2d668f;--green:#2d765b;--orange:#a76d18;--red:#a84545}body{background:#f2f4f6;color:#172536}{% elif SYSTEM_SETTINGS.get("theme") == "رسمي أنيق" %}:root{--primary:#173b5c;--primary-dark:#102d46;--surface-soft:#f3f6f8}{% endif %}{% if SYSTEM_SETTINGS.get("custom_css") %}{{ SYSTEM_SETTINGS.get("custom_css")|safe }}{% endif %}</style>
 </head>
-<body>
+<body class="theme-{{ (SYSTEM_SETTINGS.get("theme") or "رسمي أنيق")|lower|replace(" ","-")|replace("_","-") }}">
 <div class="app-shell">
-    <aside class="sidebar">
-        <div class="brand brand-side">
-            <div class="brand-mark">د</div>
-            <div class="brand-copy">
-                <h1>نظام العمليات المالية</h1>
-                <p>Financial Operations System</p>
+<aside class="sidebar" id="appSidebar">
+    <div class="brand brand-side"><div class="brand-mark">{% if SYSTEM_SETTINGS.get("institution_logo") %}<img src="{{ url_for('main.uploads',filename=SYSTEM_SETTINGS.get('institution_logo')) }}" alt="شعار المؤسسة">{% else %}م{% endif %}</div><div class="brand-copy"><h1>{{ system_name }}</h1><p>{{ SYSTEM_SETTINGS.get("system_tagline", "Financial Operations System") }}</p></div></div>
+    <div class="side-section-title">{{ ui_label('home_section','الرئيسية') }}</div>
+    <nav class="nav" aria-label="التنقل الرئيسي">
+        <div class="nav-group {% if request.endpoint=='main.dashboard' %}open{% endif %}">
+            <button class="nav-item nav-group-toggle {% if request.endpoint=='main.dashboard' %}active{% endif %}" type="button" aria-expanded="{% if request.endpoint=='main.dashboard' %}true{% else %}false{% endif %}" aria-controls="dashboard-submenu" onclick="toggleNavGroup(this)">
+                <span class="nav-icon">⌂</span><span class="nav-label">{{ ui_label('dashboard','لوحة التحكم') }}</span><span class="nav-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="dashboard-submenu" class="nav-submenu" {% if request.endpoint=='main.dashboard' %}data-open="true"{% endif %}>
+                <a class="nav-subitem {% if request.endpoint=='main.dashboard' %}active{% endif %}" href="{{ url_for('main.dashboard') }}"><span class="sub-dot">⌂</span><span>الرئيسية</span></a>
             </div>
         </div>
+    </nav>
 
-        <div class="side-section-title">الرئيسية</div>
-        <nav class="nav">
-            <a class="nav-item {% if request.endpoint == 'main.dashboard' %}active{% endif %}" href="{{ url_for('main.dashboard') }}"><span class="nav-icon">⌂</span><span>لوحة التحكم</span></a>
-        </nav>
-
-        <div class="side-section-title">العمليات المالية</div>
-        <nav class="nav">
-            <a class="nav-item {% if request.endpoint == 'main.operations_list' and request.view_args.get('op_type') == 'revenue' %}active{% endif %}" href="{{ url_for('main.operations_list', op_type='revenue') }}"><span class="nav-icon">↗</span><span>الإيرادات</span></a>
-            <a class="nav-item {% if request.endpoint == 'main.operations_list' and request.view_args.get('op_type') == 'deposit' %}active{% endif %}" href="{{ url_for('main.operations_list', op_type='deposit') }}"><span class="nav-icon">⇩</span><span>التوريدات</span></a>
-            <a class="nav-item {% if request.endpoint == 'main.operations_list' and request.view_args.get('op_type') == 'approval' %}active{% endif %}" href="{{ url_for('main.operations_list', op_type='approval') }}"><span class="nav-icon">✓</span><span>طلبات التصديق</span></a>
-            <a class="nav-item {% if request.endpoint == 'main.petty_cash' %}active{% endif %}" href="{{ url_for('main.petty_cash') }}"><span class="nav-icon">▣</span><span>النثرية الشهرية</span></a>
-            <a class="nav-item {% if request.endpoint == 'main.operations_list' and request.view_args.get('op_type') == 'due' %}active{% endif %}" href="{{ url_for('main.operations_list', op_type='due') }}"><span class="nav-icon">◷</span><span>المستحقات</span></a>
-        </nav>
-
-        <div class="side-section-title">الرقابة والإدارة</div>
-        <nav class="nav">
-            <a class="nav-item {% if request.endpoint == 'main.logs' %}active{% endif %}" href="{{ url_for('main.logs') }}"><span class="nav-icon">≡</span><span>سجل الحركة والتدقيق</span></a>
-            {% if current_user and current_user.role in ['manager','super_admin'] %}
-            <a class="nav-item {% if request.endpoint == 'main.settings' %}active{% endif %}" href="{{ url_for('main.settings') }}"><span class="nav-icon">⚙</span><span>إعدادات المحطة</span></a>
-            {% endif %}
-            {% if current_user and current_user.role == 'super_admin' %}
-            <a class="nav-item {% if request.endpoint == 'main.users' %}active{% endif %}" href="{{ url_for('main.users') }}"><span class="nav-icon">♙</span><span>إدارة المستخدمين</span></a>
-            {% endif %}
-        </nav>
-
-        <div class="side-footer">
-            <div class="security-mark"><span></span> نظام رقابي داخلي</div>
-            <small>Financial Operations System v1.0</small>
+    {% if current_user.role != 'super_admin' %}
+    <div class="side-section-title">{{ ui_label('operations_section','العمليات المالية') }}</div>
+    <nav class="nav" aria-label="العمليات المالية">
+        <div class="nav-group {% if request.endpoint=='main.operations_list' or request.endpoint in ['main.petty_cash','main.petty_cash_receipt_new'] %}open{% endif %}">
+            <button class="nav-item nav-group-toggle {% if request.endpoint in ['main.operations_list','main.petty_cash','main.petty_cash_receipt_new'] %}active{% endif %}" type="button" aria-expanded="{% if request.endpoint in ['main.operations_list','main.petty_cash','main.petty_cash_receipt_new'] %}true{% else %}false{% endif %}" aria-controls="financial-submenu" onclick="toggleNavGroup(this)">
+                <span class="nav-icon">▦</span><span class="nav-label">العمليات المالية</span><span class="nav-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="financial-submenu" class="nav-submenu" {% if request.endpoint in ['main.operations_list','main.petty_cash','main.petty_cash_receipt_new'] %}data-open="true"{% endif %}>
+                <a class="nav-subitem {% if request.endpoint=='main.operations_list' and request.view_args.get('op_type')=='approval' %}active{% endif %}" href="{{ url_for('main.operations_list',op_type='approval') }}"><span class="sub-dot">✓</span><span>طلبات التصديق</span></a>
+                <a class="nav-subitem {% if request.endpoint=='main.petty_cash' or request.endpoint=='main.petty_cash_receipt_new' %}active{% endif %}" href="{{ url_for('main.petty_cash') }}"><span class="sub-dot">▣</span><span>النثرية الشهرية</span></a>
+                <a class="nav-subitem {% if request.endpoint=='main.operations_list' and request.view_args.get('op_type')=='due' %}active{% endif %}" href="{{ url_for('main.operations_list',op_type='due') }}"><span class="sub-dot">◷</span><span>المستحقات والسلف</span></a>
+                <a class="nav-subitem {% if request.endpoint=='main.document_templates' %}active{% endif %}" href="{{ url_for('main.document_templates') }}"><span class="sub-dot">▤</span><span>الاستمارات الرسمية</span></a>
+            </div>
         </div>
-    </aside>
+    </nav>
+    {% endif %}
 
-    <main class="main-area">
-        <header class="topbar">
-            <div class="page-heading">
-                <div class="eyebrow">نظام العمليات المالية</div>
-                <h2>{% block page_title %}لوحة التحكم{% endblock %}</h2>
-                {% if current_user %}
-                <p>{{ current_user.station_name or 'إدارة النظام' }} <span>•</span> {{ current_user.full_name }}</p>
+    <div class="side-section-title">{{ ui_label('control_section','الرقابة والإدارة') }}</div>
+    <nav class="nav" aria-label="الرقابة والإدارة">
+        {% if current_user.role in ['manager','super_admin'] %}
+        <div class="nav-group {% if request.endpoint=='main.logs' %}open{% endif %}">
+            <button class="nav-item nav-group-toggle {% if request.endpoint=='main.logs' %}active{% endif %}" type="button" aria-expanded="{% if request.endpoint=='main.logs' %}true{% else %}false{% endif %}" aria-controls="audit-submenu" onclick="toggleNavGroup(this)">
+                <span class="nav-icon">≡</span><span class="nav-label">{{ ui_label('logs','سجل الحركة والتدقيق') }}</span><span class="nav-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="audit-submenu" class="nav-submenu" {% if request.endpoint=='main.logs' %}data-open="true"{% endif %}>
+                <a class="nav-subitem {% if request.endpoint=='main.logs' %}active{% endif %}" href="{{ url_for('main.logs') }}"><span class="sub-dot">📋</span><span>سجل الحركة</span></a>
+                {% if current_user.role=='super_admin' %}
+                <a class="nav-subitem {% if request.endpoint=='main.maintenance_center' and request.view_args.get('section')=='audit' %}active{% endif %}" href="{{ url_for('main.maintenance_center',section='audit') }}"><span class="sub-dot">🔎</span><span>سجل التدقيق المركزي</span></a>
                 {% endif %}
             </div>
-            {% if current_user %}
-            <div class="top-actions">
-                <div class="user-chip">
-                    <div class="user-avatar">{{ (current_user.full_name or current_user.username)[0] }}</div>
-                    <div class="user-chip-text">
-                        <strong>{{ current_user.full_name or current_user.username }}</strong>
-                        <span>{{ current_user.role }}</span>
-                    </div>
-                </div>
-                <span class="station-chip">{{ current_user.station_code or 'SYS' }}</span>
-                <a class="btn ghost logout-btn" href="{{ url_for('main.logout') }}">خروج</a>
+        </div>
+        {% endif %}
+
+        {% if current_user.role == 'manager' %}
+        <div class="nav-group {% if request.endpoint=='main.settings' %}open{% endif %}">
+            <button class="nav-item nav-group-toggle {% if request.endpoint=='main.settings' %}active{% endif %}" type="button" aria-expanded="{% if request.endpoint=='main.settings' %}true{% else %}false{% endif %}" aria-controls="settings-submenu" onclick="toggleNavGroup(this)">
+                <span class="nav-icon">⚙</span><span class="nav-label">{{ ui_label('station_settings','إعدادات المحطة') }}</span><span class="nav-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="settings-submenu" class="nav-submenu" {% if request.endpoint=='main.settings' %}data-open="true"{% endif %}>
+                <a class="nav-subitem {% if request.endpoint=='main.settings' %}active{% endif %}" href="{{ url_for('main.settings') }}"><span class="sub-dot">⚙</span><span>بيانات المحطة</span></a>
             </div>
-            {% endif %}
-        </header>
+        </div>
+        {% endif %}
 
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                <div class="messages">
-                    {% for category, message in messages %}
-                    <div class="message {{ category }}"><span class="message-dot"></span>{{ message }}</div>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        {% endwith %}
+        {% if current_user.role == 'super_admin' %}
+        <div class="nav-group {% if request.endpoint=='main.stations' %}open{% endif %}">
+            <button class="nav-item nav-group-toggle {% if request.endpoint=='main.stations' %}active{% endif %}" type="button" aria-expanded="{% if request.endpoint=='main.stations' %}true{% else %}false{% endif %}" aria-controls="stations-submenu" onclick="toggleNavGroup(this)">
+                <span class="nav-icon">⌘</span><span class="nav-label">{{ ui_label('stations','إدارة المحطات') }}</span><span class="nav-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="stations-submenu" class="nav-submenu" {% if request.endpoint=='main.stations' %}data-open="true"{% endif %}>
+                <a class="nav-subitem {% if request.endpoint=='main.stations' and request.args.get('focus')!='create' %}active{% endif %}" href="{{ url_for('main.stations',focus='list') }}#station-list"><span class="sub-dot">⌘</span><span>المحطات</span></a>
+                <a class="nav-subitem {% if request.endpoint=='main.stations' and request.args.get('focus')=='create' %}active{% endif %}" href="{{ url_for('main.stations',focus='create') }}#station-create"><span class="sub-dot">＋</span><span>إنشاء محطة</span></a>
+            </div>
+        </div>
 
-        <section class="content">
-            {% block content %}{% endblock %}
-        </section>
+        <div class="nav-group {% if request.endpoint=='main.users' %}open{% endif %}">
+            <button class="nav-item nav-group-toggle {% if request.endpoint=='main.users' %}active{% endif %}" type="button" aria-expanded="{% if request.endpoint=='main.users' %}true{% else %}false{% endif %}" aria-controls="users-submenu" onclick="toggleNavGroup(this)">
+                <span class="nav-icon">♙</span><span class="nav-label">{{ ui_label('users','إدارة المستخدمين') }}</span><span class="nav-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="users-submenu" class="nav-submenu" {% if request.endpoint=='main.users' %}data-open="true"{% endif %}>
+                <a class="nav-subitem {% if request.endpoint=='main.users' and request.args.get('focus')!='create' %}active{% endif %}" href="{{ url_for('main.users',focus='list') }}#user-list"><span class="sub-dot">•</span><span>المستخدمون</span></a>
+                <a class="nav-subitem {% if request.endpoint=='main.users' and request.args.get('focus')=='create' %}active{% endif %}" href="{{ url_for('main.users',focus='create') }}#user-create"><span class="sub-dot">＋</span><span>إنشاء مستخدم</span></a>
+            </div>
+        </div>
 
-        <footer class="app-footer">
-            <span>نظام العمليات المالية</span>
-            <span>رقابة مالية داخلية • v1.0</span>
-        </footer>
-    </main>
-</div>
-</body>
-</html>
+        <div class="nav-group {% if request.endpoint=='main.maintenance_center' %}open{% endif %}">
+            <button class="nav-item nav-group-toggle {% if request.endpoint=='main.maintenance_center' %}active{% endif %}" type="button" aria-expanded="{% if request.endpoint=='main.maintenance_center' %}true{% else %}false{% endif %}" aria-controls="maintenance-submenu" onclick="toggleNavGroup(this)">
+                <span class="nav-icon">⚙</span><span class="nav-label">{{ ui_label('maintenance','مركز الصيانة والتشغيل') }}</span><span class="nav-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="maintenance-submenu" class="nav-submenu maintenance-nav-submenu" {% if request.endpoint=='main.maintenance_center' %}data-open="true"{% endif %}>
+                {% set maintenance_nav=[
+                ('overview','🛠️','لوحة المركز'),('stations','🏢','المحطات'),('users','👥','المستخدمون'),('passwords','🔑','استعادة كلمات المرور'),
+                ('sessions','🟢','الجلسات'),('identity','🏷️','الهوية والمسميات'),('themes','🎨','التصاميم'),('petty','💰','النثرية'),
+                ('templates','📄','النماذج المركزية'),('system','💾','النسخ والتشخيص'),('monitor','📊','المراقبة التشغيلية'),('audit','📋','سجل التدقيق')]
+                %}
+                {% for slug,icon,label in maintenance_nav %}
+                <a class="nav-subitem {% if request.endpoint=='main.maintenance_center' and request.view_args.get('section')==slug %}active{% endif %}" href="{{ url_for('main.maintenance_center',section=slug) }}"><span class="sub-dot">{{ icon }}</span><span>{{ label }}</span></a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="nav-group {% if request.endpoint=='main.document_templates' %}open{% endif %}">
+            <button class="nav-item nav-group-toggle {% if request.endpoint=='main.document_templates' %}active{% endif %}" type="button" aria-expanded="{% if request.endpoint=='main.document_templates' %}true{% else %}false{% endif %}" aria-controls="templates-submenu" onclick="toggleNavGroup(this)">
+                <span class="nav-icon">▤</span><span class="nav-label">النماذج المركزية</span><span class="nav-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="templates-submenu" class="nav-submenu" {% if request.endpoint=='main.document_templates' %}data-open="true"{% endif %}>
+                <a class="nav-subitem {% if request.endpoint=='main.document_templates' %}active{% endif %}" href="{{ url_for('main.document_templates') }}#template-list"><span class="sub-dot">▤</span><span>النماذج المتاحة</span></a>
+                <a class="nav-subitem" href="{{ url_for('main.document_templates') }}#template-create"><span class="sub-dot">＋</span><span>إضافة نموذج</span></a>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="nav-group {% if request.endpoint in ['main.help_center','main.contextual_help'] %}open{% endif %}">
+            <button class="nav-item nav-group-toggle {% if request.endpoint in ['main.help_center','main.contextual_help'] %}active{% endif %}" type="button" aria-expanded="{% if request.endpoint in ['main.help_center','main.contextual_help'] %}true{% else %}false{% endif %}" aria-controls="help-submenu" onclick="toggleNavGroup(this)">
+                <span class="nav-icon">?</span><span class="nav-label">مركز المساعدة</span><span class="nav-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="help-submenu" class="nav-submenu" {% if request.endpoint in ['main.help_center','main.contextual_help'] %}data-open="true"{% endif %}>
+                <a class="nav-subitem {% if request.endpoint=='main.help_center' %}active{% endif %}" href="{{ url_for('main.help_center') }}#help-topics"><span class="sub-dot">?</span><span>أدلة الاستخدام</span></a>
+                <a class="nav-subitem {% if request.endpoint=='main.help_center' %}active{% endif %}" href="{{ url_for('main.help_center') }}#help-principles"><span class="sub-dot">✓</span><span>مبادئ الاستخدام</span></a>
+            </div>
+        </div>
+
+        <div class="nav-group {% if request.endpoint=='main.notifications' %}open{% endif %}">
+            <button class="nav-item nav-group-toggle {% if request.endpoint=='main.notifications' %}active{% endif %}" type="button" aria-expanded="{% if request.endpoint=='main.notifications' %}true{% else %}false{% endif %}" aria-controls="notifications-submenu" onclick="toggleNavGroup(this)">
+                <span class="nav-icon">🔔</span><span class="nav-label">الإشعارات</span><span class="nav-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="notifications-submenu" class="nav-submenu" {% if request.endpoint=='main.notifications' %}data-open="true"{% endif %}>
+                <a class="nav-subitem {% if request.endpoint=='main.notifications' %}active{% endif %}" href="{{ url_for('main.notifications') }}"><span class="sub-dot">🔔</span><span>مركز الإشعارات</span></a>
+            </div>
+        </div>
+
+        <div class="nav-group {% if request.endpoint=='main.global_search' %}open{% endif %}">
+            <button class="nav-item nav-group-toggle {% if request.endpoint=='main.global_search' %}active{% endif %}" type="button" aria-expanded="{% if request.endpoint=='main.global_search' %}true{% else %}false{% endif %}" aria-controls="search-submenu" onclick="toggleNavGroup(this)">
+                <span class="nav-icon">⌕</span><span class="nav-label">البحث الشامل</span><span class="nav-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="search-submenu" class="nav-submenu" {% if request.endpoint=='main.global_search' %}data-open="true"{% endif %}>
+                <a class="nav-subitem {% if request.endpoint=='main.global_search' %}active{% endif %}" href="{{ url_for('main.global_search') }}"><span class="sub-dot">⌕</span><span>فتح البحث</span></a>
+            </div>
+        </div>
+
+        <div class="nav-group {% if request.endpoint=='main.change_password' %}open{% endif %}">
+            <button class="nav-item nav-group-toggle {% if request.endpoint=='main.change_password' %}active{% endif %}" type="button" aria-expanded="{% if request.endpoint=='main.change_password' %}true{% else %}false{% endif %}" aria-controls="password-submenu" onclick="toggleNavGroup(this)">
+                <span class="nav-icon">⌁</span><span class="nav-label">{{ ui_label('change_password','تغيير كلمة المرور') }}</span><span class="nav-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="password-submenu" class="nav-submenu" {% if request.endpoint=='main.change_password' %}data-open="true"{% endif %}>
+                <a class="nav-subitem {% if request.endpoint=='main.change_password' %}active{% endif %}" href="{{ url_for('main.change_password') }}"><span class="sub-dot">⌁</span><span>تغيير كلمة المرور</span></a>
+            </div>
+        </div>
+    </nav>
+    <div class="side-footer"><div class="security-mark"><span></span> {{ ui_label('internal_footer','نظام رقابي داخلي') }}</div><small>Financial Operations System v1.0</small></div>
+</aside>
+<div class="mobile-nav-backdrop" id="mobileNavBackdrop" aria-hidden="true"></div>
+<main class="main-area">
+<header class="topbar">
+    <button class="mobile-menu-toggle" id="mobileMenuToggle" type="button" aria-label="فتح القائمة" aria-controls="appSidebar" aria-expanded="false">☰</button>
+    <div class="page-heading"><div class="eyebrow">{{ system_name }}</div><h2>{% block page_title %}لوحة التحكم{% endblock %}</h2>{% if current_user %}<p>{{ current_user.station_name or 'إدارة النظام' }} <span>•</span> {{ current_user.full_name }}</p>{% endif %}</div>
+    {% if current_user %}<div class="top-actions"><a class="top-notify" href="{{ url_for('main.notifications') }}">🔔 {% if current_user %}<span>{{ notifications_count }}</span>{% endif %}</a><form class="quick-search" action="{{ url_for('main.global_search') }}" method="get"><input name="q" placeholder="بحث شامل" aria-label="بحث شامل"></form><div class="user-chip"><div class="user-avatar">{{ (current_user.full_name or current_user.username)[0] }}</div><div class="user-chip-text"><strong>{{ current_user.full_name or current_user.username }}</strong><span>{{ ROLE_LABELS.get(current_user.role,current_user.role) }}</span></div></div><span class="station-chip">{{ current_user.station_code or 'SYS' }}</span><a class="btn ghost logout-btn" href="{{ url_for('main.logout') }}">خروج</a></div>{% endif %}
+</header>
+{% with messages=get_flashed_messages(with_categories=true) %}{% if messages %}<div class="messages">{% for category,message in messages %}<div class="message {{ category }}"><span class="message-dot"></span>{{ message }}</div>{% endfor %}</div>{% endif %}{% endwith %}
+{% if current_user and attention %}<div class="attention-strip"><strong>يحتاج انتباهك الآن</strong>{% for a in attention[:4] %}<a class="attention-item {{ a.level }}" href="{{ a.link }}">{{ a.text }} ↗</a>{% endfor %}</div>{% endif %}
+<section class="content">{% block content %}{% endblock %}</section>
+<footer class="app-footer"><span>نظام العمليات المالية</span><span>{{ SYSTEM_SETTINGS.get("footer_text", "رقابة مالية داخلية • v1.0") }}</span></footer>
+</main></div>
+<script>
+function toggleNavGroup(button) {
+    const submenu = document.getElementById(button.getAttribute('aria-controls'));
+    if (!submenu) return;
+    const willOpen = button.getAttribute('aria-expanded') !== 'true';
+    button.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+    submenu.classList.toggle('is-open', willOpen);
+    button.parentElement.classList.toggle('open', willOpen);
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    const mobileToggle = document.getElementById('mobileMenuToggle');
+    const mobileSidebar = document.getElementById('appSidebar');
+    const mobileBackdrop = document.getElementById('mobileNavBackdrop');
+
+    function setMobileNav(open) {
+        if (!mobileToggle || !mobileSidebar || !mobileBackdrop) return;
+        mobileSidebar.classList.toggle('mobile-open', open);
+        mobileBackdrop.classList.toggle('is-visible', open);
+        mobileToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        mobileToggle.setAttribute('aria-label', open ? 'إغلاق القائمة' : 'فتح القائمة');
+        document.body.classList.toggle('nav-open', open);
+    }
+
+    if (mobileToggle) mobileToggle.addEventListener('click', function () {
+        setMobileNav(!mobileSidebar.classList.contains('mobile-open'));
+    });
+    if (mobileBackdrop) mobileBackdrop.addEventListener('click', function () { setMobileNav(false); });
+    document.querySelectorAll('.nav-subitem').forEach(function (item) {
+        item.addEventListener('click', function () { setMobileNav(false); });
+    });
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') setMobileNav(false);
+    });
+
+    document.querySelectorAll('.nav-submenu[data-open="true"]').forEach(function (submenu) {
+        submenu.classList.add('is-open');
+    });
+
+    function revealHashTarget() {
+        const hash = window.location.hash;
+        if (!hash) return;
+        const target = document.querySelector(hash);
+        if (target) {
+            setTimeout(function () {
+                target.scrollIntoView({behavior: 'smooth', block: 'start'});
+            }, 80);
+        }
+    }
+    revealHashTarget();
+});
+</script>
+</body></html>

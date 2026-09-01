@@ -1,0 +1,11 @@
+<section class="panel" id="templates">
+    <div class="panel-head"><div><span class="section-kicker">المستندات الرسمية</span><h3>النماذج المركزية</h3><p class="muted">يرفع السوبر أدمن ملفات PDF المركزية التي تظهر للمحطات وفق الصلاحيات المعتمدة.</p></div></div>
+    <form method="post" action="{{ url_for('main.document_templates') }}" enctype="multipart/form-data" class="grid-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="next" value="maintenance">
+      <div><label>اسم النموذج</label><input name="title" required placeholder="مثلاً: استمارة صرف"></div><div><label>الوصف</label><input name="description"></div><div class="full-row"><label>ملف PDF</label><input type="file" name="file" accept="application/pdf" required></div>
+      <div class="form-actions full-row"><button class="btn primary">رفع النموذج المركزي</button></div>
+    </form>
+    <hr class="soft-divider"><div class="table-wrap"><table class="table"><thead><tr><th>النموذج</th><th>الوصف</th><th>الرافع</th><th>الحالة</th><th>الإجراء</th></tr></thead><tbody>
+      {% for d in templates %}<tr><td><strong>{{ d.title }}</strong></td><td>{{ d.description or '-' }}</td><td>{{ d.uploader or '-' }}</td><td>{% if d.active %}<span class="status status-ok">نشط</span>{% else %}<span class="status status-danger">موقوف</span>{% endif %}</td><td><div class="row-actions"><a class="btn ghost" href="{{ url_for('main.template_files',filename=d.file_path) }}" target="_blank" rel="noopener">عرض</a><form method="post" action="{{ url_for('main.template_toggle',template_id=d.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="next" value="maintenance"><button class="btn warning">{{ 'إيقاف' if d.active else 'تفعيل' }}</button></form></div></td></tr>{% else %}<tr><td colspan="5" class="empty">لا توجد نماذج مركزية.</td></tr>{% endfor %}
+    </tbody></table></div>
+  </section>

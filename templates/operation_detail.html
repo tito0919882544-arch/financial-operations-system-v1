@@ -1,90 +1,17 @@
-{% extends "base.html" %}
-{% block title %}{{ op.op_no }}{% endblock %}
-{% block page_title %}تفاصيل العملية {{ op.op_no }}{% endblock %}
+{% extends "base.html" %}{% block title %}{{ op.op_no }}{% endblock %}{% block page_title %}تفاصيل العملية {{ op.op_no }}{% endblock %}
 {% block content %}
-<div class="detail-grid">
-    <section class="panel">
-        <div class="panel-head">
-            <h3>{{ TYPE_LABELS[op.op_type] }} — {{ op.title }}</h3>
-            <span class="status {{ STATUS_CLASSES[op.status] }}">{{ STATUS_LABELS[op.status] }}</span>
-        </div>
-        <div class="info-grid">
-            <div><span>رقم العملية</span><b>{{ op.op_no }}</b></div>
-            <div><span>المحطة</span><b>{{ op.station_name }}</b></div>
-            <div><span>البند</span><b>{{ op.category or '-' }}</b></div>
-            <div><span>المبلغ</span><b>{{ "{:,.0f}".format(op.amount) }}</b></div>
-            <div><span>أنشئت بواسطة</span><b>{{ op.creator_name }}</b></div>
-            <div><span>تاريخ الإنشاء</span><b>{{ op.created_at }}</b></div>
-            <div><span>اعتماد/مراجعة</span><b>{{ op.reviewer_name or '-' }}</b></div>
-            <div><span>تاريخ المراجعة</span><b>{{ op.reviewed_at or '-' }}</b></div>
-        </div>
-        <div class="note-box"><span>الوصف</span><p>{{ op.description or 'لا يوجد وصف.' }}</p></div>
-        {% if op.manager_note %}<div class="note-box manager"><span>ملاحظة المدير</span><p>{{ op.manager_note }}</p></div>{% endif %}
-        {% if op.attachment_path %}<a class="btn ghost" href="{{ url_for('main.uploads', filename=op.attachment_path) }}" target="_blank">فتح المرفق</a>{% endif %}
-        <a class="btn ghost" href="{{ url_for('main.operation_print', operation_id=op.id) }}" target="_blank">طباعة رسمية</a>
-        {% if not op.locked and op.status in ['pending_review','returned','rejected'] %}
-            <a class="btn ghost" href="{{ url_for('main.operation_edit', operation_id=op.id) }}">تعديل</a>
-        {% endif %}
-    </section>
-
-    <aside class="panel">
-        <div class="panel-head"><h3>إجراءات المدير</h3></div>
-        {% if current_user.role in ['manager','super_admin'] and op.status not in ['approved'] %}
-        <form method="post" action="{{ url_for('main.operation_review', operation_id=op.id, action='approve') }}" class="mini-form">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <textarea name="manager_note" placeholder="ملاحظة الاعتماد - اختياري"></textarea>
-            <button class="btn success full">اعتماد</button>
-        </form>
-        <form method="post" action="{{ url_for('main.operation_review', operation_id=op.id, action='return') }}" class="mini-form">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <textarea name="manager_note" required placeholder="سبب الإرجاع للتصحيح"></textarea>
-            <button class="btn warning full">إرجاع للتصحيح</button>
-        </form>
-        <form method="post" action="{{ url_for('main.operation_review', operation_id=op.id, action='reject') }}" class="mini-form">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <textarea name="manager_note" required placeholder="سبب الرفض"></textarea>
-            <button class="btn danger full">رفض</button>
-        </form>
-        {% elif op.status == 'approved' %}
-            <div class="alert success">هذه العملية معتمدة ومقفلة. أي تغيير يتم عبر إجراء تصحيحي مسجل.</div>
-            {% if current_user.role in ['manager','super_admin'] %}
-            <form method="post" action="{{ url_for('main.operation_correct', operation_id=op.id) }}" class="mini-form correction-form">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <input name="amount" type="number" step="0.01" placeholder="مبلغ جديد - اختياري">
-                <input name="category" placeholder="بند جديد - اختياري">
-                <textarea name="description" placeholder="وصف جديد - اختياري"></textarea>
-                <textarea name="reason" required placeholder="سبب التصحيح الإلزامي"></textarea>
-                <button class="btn primary full">تنفيذ إجراء تصحيحي</button>
-            </form>
-            {% endif %}
-        {% else %}
-            <div class="alert info">لا توجد إجراءات متاحة لهذا الدور.</div>
-        {% endif %}
-    </aside>
-</div>
-
-<div class="detail-grid">
-    <section class="panel">
-        <div class="panel-head"><h3>سجل الحركة</h3></div>
-        <table class="table compact">
-            <thead><tr><th>الإجراء</th><th>من</th><th>من حالة</th><th>إلى حالة</th><th>ملاحظة</th><th>IP</th><th>الوقت</th></tr></thead>
-            <tbody>
-            {% for a in actions %}
-            <tr><td>{{ a.action }}</td><td>{{ a.user_name or '-' }}</td><td>{{ STATUS_LABELS.get(a.old_status, a.old_status or '-') }}</td><td>{{ STATUS_LABELS.get(a.new_status, a.new_status or '-') }}</td><td>{{ a.note or '-' }}</td><td>{{ a.ip_address or '-' }}</td><td>{{ a.created_at }}</td></tr>
-            {% else %}<tr><td colspan="7" class="empty">لا يوجد سجل.</td></tr>{% endfor %}
-            </tbody>
-        </table>
-    </section>
-    <section class="panel">
-        <div class="panel-head"><h3>الإجراءات التصحيحية</h3></div>
-        <table class="table compact">
-            <thead><tr><th>الحقل</th><th>القيمة القديمة</th><th>القيمة الجديدة</th><th>السبب</th><th>بواسطة</th><th>الوقت</th></tr></thead>
-            <tbody>
-            {% for c in corrections %}
-            <tr><td>{{ c.field_name }}</td><td>{{ c.old_value }}</td><td>{{ c.new_value }}</td><td>{{ c.reason }}</td><td>{{ c.user_name }}</td><td>{{ c.created_at }}</td></tr>
-            {% else %}<tr><td colspan="6" class="empty">لا توجد تصحيحات.</td></tr>{% endfor %}
-            </tbody>
-        </table>
-    </section>
-</div>
+<div class="detail-grid"><section class="panel"><div class="panel-head"><h3>{{ TYPE_LABELS[op.op_type] }} — {{ op.title }}</h3><span class="status {{ STATUS_CLASSES[op.status] }}">{{ STATUS_LABELS[op.status] }}</span></div>
+<div class="info-grid"><div><span>رقم العملية</span><b>{{ op.op_no }}</b></div><div><span>المحطة</span><b>{{ op.station_name }}</b></div><div><span>البند</span><b>{{ op.category or 'تمويل النثرية' }}</b></div><div><span>المبلغ</span><b>{{ "{:,.0f}".format(op.amount) }}</b></div><div><span>أنشئت بواسطة</span><b>{{ op.creator_name }}</b></div><div><span>تاريخ الإنشاء</span><b>{{ op.created_at }}</b></div><div><span>المراجع</span><b>{{ op.reviewer_name or '-' }}</b></div><div><span>تاريخ المراجعة</span><b>{{ op.reviewed_at or '-' }}</b></div></div>
+{% if op.op_type=='due' %}<div class="balance-strip"><span>الرصيد الفعلي الحالي</span><strong>{{ "{:,.0f}".format(balance) }}</strong><span>المتبقي من المستحق</span><strong>{{ "{:,.0f}".format(unsettled) }}</strong></div>{% endif %}
+<div class="note-box"><span>الوصف</span><p>{{ op.description or 'لا يوجد وصف.' }}</p></div>{% if op.manager_note %}<div class="note-box manager"><span>ملاحظة المدير</span><p>{{ op.manager_note }}</p></div>{% endif %}
+{% if templates %}<details class="document-box"><summary>النماذج الرسمية المرتبطة بالدورة</summary>{% for t in templates %}<a class="btn ghost" href="{{ url_for('main.template_files',filename=t.file_path) }}" target="_blank">{{ t.title }}</a>{% endfor %}</details>{% endif %}{% if op.attachment_path %}<a class="btn ghost" href="{{ url_for('main.uploads',filename=op.attachment_path) }}" target="_blank">فتح المرفق</a>{% endif %}<a class="btn ghost" href="{{ url_for('main.operation_print',operation_id=op.id) }}" target="_blank">طباعة رسمية</a> <a class="btn ghost" href="{{ url_for('main.operation_bundle',operation_id=op.id) }}">حزمة العملية</a>
+{% if not op.locked and op.status in ['pending_review','returned','rejected'] and (current_user.role!='collector' or current_user.id==op.created_by) %}<a class="btn ghost" href="{{ url_for('main.operation_edit',operation_id=op.id) }}">تعديل</a>{% endif %}
+<div class="process-track">{% set steps=['الإنشاء','المستند','المراجعة','الاعتماد','التنفيذ','التسوية','الإغلاق'] %}{% for st in steps %}<span class="{% if loop.index<=current_step %}done{% endif %}{% if loop.index==current_step %} active{% endif %}">{{ st }}</span>{% endfor %}</div>
+<div class="operation-next"><strong>المرحلة الحالية: {{ current_step_label }}</strong>{% if op.status in ['pending_review','returned'] and not op.locked %}<a class="btn primary" href="{{ url_for('main.operation_resume',operation_id=op.id) }}">استكمال العملية</a>{% endif %}</div></section>
+<aside class="panel"><div class="panel-head"><h3>إجراءات المراجعة</h3></div>
+{% if current_user.role in ['manager','super_admin'] and op.status not in ['approved','closed'] %}<button type="button" class="btn ghost full" onclick="preflight({{ op.id }})">فحص جاهزية العملية</button><div id="preflight-result" class="alert info" style="display:none"></div><form method="post" action="{{ url_for('main.operation_review',operation_id=op.id,action='approve') }}" class="mini-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><textarea name="manager_note" placeholder="ملاحظة الاعتماد - اختياري"></textarea><button class="btn success full">اعتماد العملية</button></form><form method="post" action="{{ url_for('main.operation_review',operation_id=op.id,action='return') }}" class="mini-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><textarea name="manager_note" required placeholder="سبب الإرجاع للتصحيح"></textarea><button class="btn warning full">إرجاع للتصحيح</button></form><form method="post" action="{{ url_for('main.operation_review',operation_id=op.id,action='reject') }}" class="mini-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><textarea name="manager_note" required placeholder="سبب الرفض"></textarea><button class="btn danger full">رفض</button></form>{% elif op.status in ['approved','closed'] %}<div class="alert success">هذه العملية معتمدة ومقفلة. أي تغيير يتم عبر إجراء تصحيحي مسجل.</div>{% if current_user.role in ['manager','super_admin'] and op.status=='approved' %}<form method="post" action="{{ url_for('main.operation_correct',operation_id=op.id) }}" class="mini-form correction-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input name="amount" type="number" step="1" placeholder="مبلغ جديد - اختياري"><input name="category" placeholder="بند جديد - اختياري"><textarea name="description" placeholder="وصف جديد - اختياري"></textarea><textarea name="reason" required placeholder="سبب التصحيح الإلزامي"></textarea><button class="btn primary full">تنفيذ إجراء تصحيحي</button></form>{% endif %}{% else %}<div class="alert info">لا توجد إجراءات متاحة لهذا الدور.</div>{% endif %}
+{% if op.op_type=='due' and op.status=='approved' and current_user.role in ['manager','super_admin'] and unsettled>0 %}<hr class="soft-divider"><h4>إعادة / تسوية المستحق</h4><form method="post" action="{{ url_for('main.settle_due',operation_id=op.id) }}" enctype="multipart/form-data" class="mini-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><label>المبلغ المعاد</label><input name="amount" type="number" min="1" max="{{ unsettled }}" step="1" required><label>إثبات التسوية</label><input name="attachment" type="file" accept=".pdf,.jpg,.jpeg,.png" required><textarea name="note" required placeholder="بيان إعادة المبلغ للنثرية"></textarea><button class="btn success full">تسجيل إعادة المبلغ</button></form>{% endif %}
+</aside></div>
+<div class="detail-grid"><section class="panel"><div class="panel-head"><h3>سجل الحركة</h3></div><table class="table compact"><thead><tr><th>الإجراء</th><th>من</th><th>من حالة</th><th>إلى حالة</th><th>ملاحظة</th><th>IP</th><th>الوقت</th></tr></thead><tbody>{% for a in actions %}<tr><td>{{ a.action }}</td><td>{{ a.user_name or '-' }}</td><td>{{ STATUS_LABELS.get(a.old_status,a.old_status or '-') }}</td><td>{{ STATUS_LABELS.get(a.new_status,a.new_status or '-') }}</td><td>{{ a.note or '-' }}</td><td>{{ a.ip_address or '-' }}</td><td>{{ a.created_at }}</td></tr>{% else %}<tr><td colspan="7" class="empty">لا يوجد سجل.</td></tr>{% endfor %}</tbody></table></section><section class="panel"><div class="panel-head"><h3>الإجراءات التصحيحية</h3></div><table class="table compact"><thead><tr><th>الحقل</th><th>القديمة</th><th>الجديدة</th><th>السبب</th><th>بواسطة</th><th>الوقت</th></tr></thead><tbody>{% for c in corrections %}<tr><td>{{ c.field_name }}</td><td>{{ c.old_value }}</td><td>{{ c.new_value }}</td><td>{{ c.reason }}</td><td>{{ c.user_name }}</td><td>{{ c.created_at }}</td></tr>{% else %}<tr><td colspan="6" class="empty">لا توجد تصحيحات.</td></tr>{% endfor %}</tbody></table></section></div>
 {% endblock %}
+<script>async function preflight(id){const r=await fetch('/operation/'+id+'/preflight',{method:'POST',headers:{'X-CSRFToken':'{{ csrf_token() }}','Content-Type':'application/x-www-form-urlencoded'},body:'csrf_token={{ csrf_token() }}'});const j=await r.json();const e=document.getElementById('preflight-result');e.style.display='block';e.className='alert '+(j.ready?'success':'warning');e.innerHTML=j.checks.map(x=>(x.ok?'✓ ':'✗ ')+x.label).join('<br>');}</script>

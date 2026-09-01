@@ -16,12 +16,11 @@ SECRET_KEY = os.environ.get("DALGO_SECRET_KEY", "change-this-secret-key-before-p
 # عند التجربة الأولى اتركها False حتى لا يمنعك اختلاف IP من الدخول.
 # عند التشغيل الرسمي داخل الشبكة يمكن جعلها True وربط كل مستخدم بعنوان IP محدد من شاشة المستخدمين/قاعدة البيانات.
 ENFORCE_IP_RESTRICTIONS = os.environ.get("DALGO_ENFORCE_IP", "false").lower() == "true"
+SUPER_ADMIN_NETWORK = os.environ.get("DALGO_SUPER_ADMIN_NETWORK", "192.168.210.0/24")
+LOCK_AFTER_ATTEMPTS = int(os.environ.get("DALGO_LOCK_AFTER_ATTEMPTS", "5"))
+LOCK_MINUTES = int(os.environ.get("DALGO_LOCK_MINUTES", "15"))
 
-SESSION_TIMEOUT_MINUTES = int(os.environ.get("DALGO_SESSION_TIMEOUT_MINUTES", "20"))
+SESSION_TIMEOUT_MINUTES = int(os.environ.get("DALGO_SESSION_TIMEOUT_MINUTES", "10"))
 MAX_CONTENT_LENGTH = 5 * 1024 * 1024
 ALLOWED_EXTENSIONS = {"pdf", "jpg", "jpeg", "png"}
 
-DEFAULT_STATION_CODE = "DLG"
-DEFAULT_STATION_NAME = "محطة الفحص الآلي دلقو"
-DEFAULT_COMPANY_NAME = "شركة الوكيل لخدمات المرور"
-DEFAULT_MANAGER_NAME = "مدير محطة دلقو"

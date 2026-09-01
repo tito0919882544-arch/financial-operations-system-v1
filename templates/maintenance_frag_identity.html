@@ -1,0 +1,19 @@
+<section class="panel" id="identity">
+    <div class="panel-head"><div><span class="section-kicker">الهوية والتكوين</span><h3>هوية النظام والمسميات</h3><p class="muted">تعديل هوية النظام والنصوص الظاهرة دون تغيير منطق العمليات.</p></div></div>
+    <form method="post" enctype="multipart/form-data" class="grid-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="save_settings"><input type="hidden" name="tab" value="identity">
+      <div><label>اسم النظام</label><input name="system_name" value="{{ settings.get('system_name','نظام العمليات المالية') }}"></div><div><label>الوصف المختصر</label><input name="system_tagline" value="{{ settings.get('system_tagline','Financial Operations System') }}"></div>
+      <div><label>عنوان الدخول</label><input name="login_title" value="{{ settings.get('login_title','تسجيل الدخول') }}"></div><div><label>الوصف أسفل العنوان</label><input name="login_subtitle" value="{{ settings.get('login_subtitle','الوصول الآمن إلى نظام العمليات المالية') }}"></div>
+      <div><label>الترحيب</label><input name="login_welcome" value="{{ settings.get('login_welcome','مرحباً بك') }}"></div><div><label>أيقونة الدخول</label><select name="login_icon"><option value="shield" {% if settings.get('login_icon')=='shield' %}selected{% endif %}>درع أمني</option><option value="lock" {% if settings.get('login_icon')=='lock' %}selected{% endif %}>قفل</option><option value="grid" {% if settings.get('login_icon')=='grid' %}selected{% endif %}>شبكة</option><option value="finance" {% if settings.get('login_icon')=='finance' %}selected{% endif %}>عمليات مالية</option></select></div>
+      <div><label>التصميم الافتراضي</label><select name="theme">{% for t in themes %}<option value="{{ t.name }}" {% if settings.get('theme')==t.name %}selected{% endif %}>{{ t.name }}</option>{% endfor %}</select></div>
+      <div class="full-row"><label>شعار المؤسسة</label><input type="file" name="institution_logo_file" accept="image/png,image/jpeg"><small class="muted">PNG/JPG — الحد الأقصى 5MB</small><input name="institution_logo" value="{{ settings.get('institution_logo','') }}" placeholder="أو اسم ملف موجود مسبقًا"></div>
+      <div class="full-row"><label>نص التذييل</label><input name="footer_text" value="{{ settings.get('footer_text','رقابة مالية داخلية • v1.0') }}"></div>
+      <div class="full-row"><label>وصف الدخول</label><textarea name="login_description">{{ settings.get('login_description','منصة موحدة لإدارة النثرية والاعتمادات والمستحقات والرقابة المالية.') }}</textarea></div>
+      <div class="full-row"><label>نص الأمان في شاشة الدخول</label><textarea name="login_security_text">{{ settings.get('login_security_text','واجهة وصول موحدة للمستخدمين المصرح لهم.') }}</textarea></div>
+      <div class="form-actions full-row"><button class="btn primary">حفظ الهوية</button></div>
+    </form>
+    <hr class="soft-divider">
+    <form method="post" class="grid-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="save_labels"><input type="hidden" name="tab" value="identity">
+      {% for key in ['dashboard','approvals','petty_cash','due','logs','templates','maintenance','stations','users','station_settings','home_section','petty_section','control_section','security_section','change_password','internal_footer'] %}<div><label>{{ key }}</label><input name="label_{{ key }}" value="{{ settings.get('label_'+key, '') }}"></div>{% endfor %}
+      <div class="form-actions full-row"><button class="btn primary">حفظ المسميات</button></div>
+    </form>
+  </section>

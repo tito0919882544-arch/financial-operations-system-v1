@@ -1,59 +1,13 @@
-{% extends "base.html" %}
-{% block title %}لوحة التحكم{% endblock %}
-{% block page_title %}لوحة التحكم الرقابية{% endblock %}
+{% extends "base.html" %}{% block title %}لوحة التحكم{% endblock %}{% block page_title %}لوحة التحكم الرقابية{% endblock %}
 {% block content %}
-<div class="dashboard-intro">
-    <div>
-        <span class="section-kicker">نظرة مالية سريعة</span>
-        <h3>ملخص الأداء المالي والرقابي</h3>
-        <p>متابعة الاعتمادات، العمليات المعلقة، والنثرية للشهر الحالي في شاشة واحدة.</p>
-    </div>
-    <div class="period-chip"><span>الفترة الحالية</span><strong>{{ month_key }}</strong></div>
-</div>
-
+<div class="dashboard-intro"><div><span class="section-kicker">نظرة مالية سريعة</span><h3>ملخص النثرية والأداء الرقابي</h3><p>متابعة الرصيد الفعلي، الاعتمادات، المستحقات، والتنبيهات في شاشة واحدة.</p></div><div class="period-chip"><span>الفترة الحالية</span><strong>{{ month_key }}</strong></div></div>{% if attention %}<section class="panel attention-panel"><div class="panel-head"><div><span class="section-kicker">إجراء فوري</span><h3>يحتاج انتباهك الآن</h3></div></div>{% for a in attention %}<a class="attention-row {{ a.level }}" href="{{ a.link }}">{{ a.text }} <span>فتح ←</span></a>{% endfor %}</section>{% endif %}
 <div class="grid cards-grid">
-    <div class="stat-card blue"><div class="stat-icon">↗</div><span>الإيرادات المعتمدة</span><strong>{{ "{:,.0f}".format(cards.revenue.total) }}</strong><small>{{ cards.revenue.c }} عملية معتمدة</small></div>
-    <div class="stat-card green"><div class="stat-icon">⇩</div><span>التوريدات المعتمدة</span><strong>{{ "{:,.0f}".format(cards.deposit.total) }}</strong><small>{{ cards.deposit.c }} توريد معتمد</small></div>
-    <div class="stat-card purple"><div class="stat-icon">✓</div><span>طلبات التصديق</span><strong>{{ "{:,.0f}".format(cards.approval.total) }}</strong><small>{{ cards.approval.c }} طلب معتمد</small></div>
-    <div class="stat-card orange"><div class="stat-icon">◷</div><span>بانتظار المدير</span><strong>{{ pending }}</strong><small>عمليات تحتاج مراجعة</small></div>
-    <div class="stat-card cyan"><div class="stat-icon">▣</div><span>سقف النثرية</span><strong>{{ "{:,.0f}".format(petty_total) }}</strong><small>المصروف: {{ "{:,.0f}".format(petty_spent) }}</small></div>
-    <div class="stat-card red"><div class="stat-icon">!</div><span>مرتجع للتصحيح</span><strong>{{ returned }}</strong><small>عمليات تتطلب متابعة</small></div>
+<div class="stat-card blue"><div class="stat-icon">◉</div><span>رصيد النثرية المتاح</span><strong>{{ "{:,.0f}".format(totals.actual) }}</strong><small>الرصيد الفعلي بعد التمويل والتصديق والتسوية</small></div>
+<div class="stat-card purple"><div class="stat-icon">✓</div><span>طلبات التصديق المعتمدة</span><strong>{{ "{:,.0f}".format(totals.spent) }}</strong><small>إجمالي المعتمد من النثرية</small></div>
+<div class="stat-card green"><div class="stat-icon">+</div><span>المبالغ المضافة للنثرية</span><strong>{{ "{:,.0f}".format(totals.funded) }}</strong><small>مستحقات وسلف معتمدة</small></div>
+<div class="stat-card cyan"><div class="stat-icon">▣</div><span>سقف النثرية الشهري</span><strong>{{ "{:,.0f}".format(totals.allocation) }}</strong><small>السقف المعتمد للبنود الثابتة</small></div>
+<div class="stat-card orange"><div class="stat-icon">◷</div><span>بانتظار المدير</span><strong>{{ pending }}</strong><small>عمليات تحتاج مراجعة</small></div>
+<div class="stat-card red"><div class="stat-icon">!</div><span>مرتجع للتصحيح</span><strong>{{ returned }}</strong><small>عمليات تتطلب متابعة</small></div>
 </div>
-
-<div class="dashboard-layout">
-    <section class="panel wide">
-        <div class="panel-head">
-            <div><span class="section-kicker">النشاط الأخير</span><h3>آخر العمليات المالية</h3></div>
-            <span class="panel-badge">{{ month_key }}</span>
-        </div>
-        <div class="table-wrap">
-        <table class="table">
-            <thead><tr><th>الرقم</th><th>النوع</th><th>العنوان</th><th>المبلغ</th><th>الحالة</th><th>الإجراء</th></tr></thead>
-            <tbody>
-            {% for row in recent %}
-                <tr>
-                    <td><strong class="op-number">{{ row.op_no }}</strong></td>
-                    <td>{{ TYPE_LABELS[row.op_type] }}</td>
-                    <td>{{ row.title }}</td>
-                    <td><strong>{{ "{:,.0f}".format(row.amount) }}</strong></td>
-                    <td><span class="status {{ STATUS_CLASSES[row.status] }}">{{ STATUS_LABELS[row.status] }}</span></td>
-                    <td><a class="link action-link" href="{{ url_for('main.operation_detail', operation_id=row.id) }}">عرض التفاصيل ←</a></td>
-                </tr>
-            {% else %}
-                <tr><td colspan="6" class="empty">لا توجد عمليات بعد.</td></tr>
-            {% endfor %}
-            </tbody>
-        </table>
-        </div>
-    </section>
-
-    <aside class="panel alerts-panel">
-        <div class="panel-head"><div><span class="section-kicker">المراقبة</span><h3>تنبيهات رقابية</h3></div><span class="alert-counter">{{ alerts|length }}</span></div>
-        {% for level, text in alerts %}
-            <div class="alert {{ level }}"><span class="alert-symbol">{% if level == 'danger' %}!{% elif level == 'warning' %}◷{% else %}i{% endif %}</span><span>{{ text }}</span></div>
-        {% else %}
-            <div class="alert success"><span class="alert-symbol">✓</span><span>لا توجد تنبيهات حرجة حالياً.</span></div>
-        {% endfor %}
-    </aside>
-</div>
+<div class="dashboard-layout"><section class="panel wide"><div class="panel-head"><div><span class="section-kicker">النشاط الأخير</span><h3>آخر عمليات النثرية</h3></div><span class="panel-badge">{{ month_key }}</span></div><div class="table-wrap"><table class="table"><thead><tr><th>الرقم</th><th>النوع</th><th>العنوان</th><th>البند</th><th>المبلغ</th><th>الحالة</th><th></th></tr></thead><tbody>{% for row in recent %}<tr><td><strong class="op-number">{{ row.op_no }}</strong></td><td>{{ TYPE_LABELS[row.op_type] }}</td><td>{{ row.title }}</td><td>{{ row.category or 'تمويل النثرية' }}</td><td><strong>{{ "{:,.0f}".format(row.amount) }}</strong></td><td><span class="status {{ STATUS_CLASSES[row.status] }}">{{ STATUS_LABELS[row.status] }}</span></td><td><a class="link" href="{{ url_for('main.operation_detail',operation_id=row.id) }}">التفاصيل ←</a></td></tr>{% else %}<tr><td colspan="7" class="empty">لا توجد عمليات بعد.</td></tr>{% endfor %}</tbody></table></div></section><aside class="panel alerts-panel"><div class="panel-head"><div><span class="section-kicker">المراقبة</span><h3>تنبيهات رقابية</h3></div><span class="alert-counter">{{ alerts|length }}</span></div>{% for level,text in alerts %}<div class="alert {{ level }}"><span class="alert-symbol">{% if level=='danger' %}!{% elif level=='warning' %}◷{% else %}i{% endif %}</span><span>{{ text }}</span></div>{% else %}<div class="alert success"><span class="alert-symbol">✓</span><span>لا توجد تنبيهات حالياً.</span></div>{% endfor %}</aside></div>
 {% endblock %}

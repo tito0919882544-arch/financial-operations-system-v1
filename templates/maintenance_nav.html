@@ -1,0 +1,16 @@
+<div class="maintenance-hub-head">
+  <div>
+    <span class="section-kicker">غرفة التحكم المركزية</span>
+    <h3>مركز الصيانة والتشغيل</h3>
+    <p class="muted">اختر وحدة واحدة لإدارة النظام دون جمع جميع الشاشات في صفحة طويلة.</p>
+  </div>
+  <a class="btn ghost" href="{{ url_for('main.maintenance_center', section='overview') }}">الرئيسية</a>
+</div>
+<nav class="maintenance-module-nav" aria-label="وحدات مركز الصيانة">
+{% set nav=[
+ ('overview','🛠️','وضع الصيانة'),('stations','🏢','المحطات'),('users','👥','المستخدمون'),('passwords','🔑','استعادة كلمات المرور'),
+ ('sessions','🟢','الجلسات'),('identity','🏷️','الهوية والمسميات'),('themes','🎨','التصاميم'),('petty','💰','النثرية'),
+ ('templates','📄','النماذج المركزية'),('system','💾','النسخ والتشخيص'),('monitor','📊','المراقبة التشغيلية'),('audit','📋','سجل التدقيق')]
+%}
+{% for slug,icon,label in nav %}<a class="maintenance-module-link {% if request.view_args and request.view_args.get('section')==slug %}active{% endif %}" href="{{ url_for('main.maintenance_center', section=slug) }}"><span>{{ icon }}</span><strong>{{ label }}</strong></a>{% endfor %}
+</nav>

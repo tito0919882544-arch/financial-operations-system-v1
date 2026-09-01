@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}مركز الصيانة — overview{% endblock %}
+{% block page_title %}مركز الصيانة والتشغيل{% endblock %}
+{% block content %}
+<div class="maintenance-center maintenance-section-page">
+{% include 'maintenance_nav.html' %}
+{% include 'maintenance_frag_overview.html' %}
+<script>(function(){const end={{ (maintenance.expected_end_at|tojson) if maintenance.expected_end_at else 'null' }};const el=document.getElementById('maintenance-countdown');if(el&&end){function tick(){const t=new Date(end.replace(' ','T')).getTime()-Date.now();if(t<=0){el.textContent='انتهت المدة المتوقعة';return;}const s=Math.floor(t/1000),h=Math.floor(s/3600),m=Math.floor((s%3600)/60),x=s%60;el.textContent=(h?String(h).padStart(2,'0')+':':'')+String(m).padStart(2,'0')+':'+String(x).padStart(2,'0')}tick();setInterval(tick,1000);}})();</script>
+</div>
+{% endblock %}

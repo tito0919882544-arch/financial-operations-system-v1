@@ -1,26 +1,4 @@
-{% extends "base.html" %}
-{% block title %}النثرية الشهرية{% endblock %}
-{% block page_title %}النثرية الشهرية — {{ month_key }}{% endblock %}
-{% block content %}
-<section class="panel">
-<table class="table">
-    <thead><tr><th>البند</th><th>المبلغ المخصص</th><th>المصروف</th><th>المتبقي</th><th>الحالة</th></tr></thead>
-    <tbody>
-    {% for row in rows %}
-    {% set remaining = row.allocated_amount - row.spent_amount %}
-    <tr>
-        <td>{{ row.category }}</td>
-        <td>{{ "{:,.0f}".format(row.allocated_amount) }}</td>
-        <td>{{ "{:,.0f}".format(row.spent_amount) }}</td>
-        <td>{{ "{:,.0f}".format(remaining) }}</td>
-        <td>
-            {% if remaining <= 0 %}<span class="status status-danger">نافد</span>
-            {% elif remaining <= row.allocated_amount * 0.15 %}<span class="status status-warn">اقترب من النفاد</span>
-            {% else %}<span class="status status-ok">نشط</span>{% endif %}
-        </td>
-    </tr>
-    {% else %}<tr><td colspan="5" class="empty">لا توجد بنود لهذا الشهر.</td></tr>{% endfor %}
-    </tbody>
-</table>
-</section>
+{% extends "base.html" %}{% block title %}النثرية الشهرية{% endblock %}{% block page_title %}النثرية الشهرية — {{ month_key }}{% endblock %}
+{% block content %}<div class="grid cards-grid petty-summary"><div class="stat-card cyan"><span>السقف الشهري</span><strong>{{ "{:,.0f}".format(totals.allocation) }}</strong></div><div class="stat-card blue"><span>الرصيد الفعلي</span><strong>{{ "{:,.0f}".format(totals.actual) }}</strong></div><div class="stat-card purple"><span>المعتمد من البنود</span><strong>{{ "{:,.0f}".format(totals.spent) }}</strong></div><div class="stat-card green"><span>التغذية المستلمة</span><strong>{{ "{:,.0f}".format(totals.received) }}</strong></div><div class="stat-card purple"><span>السلف/المستحقات المضافة</span><strong>{{ "{:,.0f}".format(totals.funded) }}</strong></div></div>
+<section class="panel"><div class="panel-head"><div><span class="section-kicker">البنود الثابتة</span><h3>{{ station.name }}</h3></div>{% if current_user.role=='manager' %}<form method="post" action="{{ url_for('main.close_month') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="month_key" value="{{ month_key }}"><button class="btn warning">قفل الشهر</button></form>{% endif %}</div><div class="table-wrap"><table class="table"><thead><tr><th>البند</th><th>المبلغ المخصص</th><th>المصروف المعتمد</th><th>المتبقي</th><th>الحالة</th></tr></thead><tbody>{% for item in rows %}<tr><td>{{ item.row.category }}</td><td>{{ "{:,.0f}".format(item.row.allocated_amount) }}</td><td>{{ "{:,.0f}".format(item.spent) }}</td><td><strong>{{ "{:,.0f}".format(item.remaining) }}</strong></td><td>{% if item.remaining<=0 %}<span class="status status-danger">نافد</span>{% elif item.remaining<=item.row.allocated_amount * 15 / 100 %}<span class="status status-warn">اقترب من النفاد</span>{% else %}<span class="status status-ok">نشط</span>{% endif %}</td></tr>{% else %}<tr><td colspan="5" class="empty">لا توجد بنود لهذا الشهر.</td></tr>{% endfor %}</tbody></table></div></section><section class="panel"><div class="panel-head"><div><span class="section-kicker">تغذية النثرية</span><h3>استلام / تغذية النثرية</h3><p class="muted">تسجل منفصلة عن الإيرادات، ولا تدخل الرصيد الفعلي إلا بعد الاعتماد.</p></div>{% if current_user.role in ['collector','manager'] %}<a class="btn primary" href="{{ url_for('main.petty_cash_receipt_new',month=month_key) }}">تسجيل استلام نثرية</a>{% endif %}</div><div class="table-wrap"><table class="table"><thead><tr><th>التاريخ</th><th>المبلغ</th><th>البيان</th><th>الحالة</th><th>المراجع</th><th>الإجراء</th></tr></thead><tbody>{% for r in receipts %}<tr><td>{{ r.created_at }}</td><td><strong>{{ "{:,.0f}".format(r.amount) }}</strong></td><td>{{ r.note }}</td><td><span class="status {% if r.status=='approved' %}status-ok{% elif r.status=='rejected' %}status-danger{% else %}status-warn{% endif %}">{{ {'pending_review':'قيد المراجعة','approved':'معتمد','returned':'مرتجع للتصحيح','rejected':'مرفوض'}.get(r.status,r.status) }}</span></td><td>{{ r.reviewer_name or '-' }}</td><td>{% if current_user.role in ['manager','super_admin'] and r.status in ['pending_review','returned'] %}<div class="row-actions"><form method="post" action="{{ url_for('main.petty_cash_receipt_review',receipt_id=r.id,action='approve') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn success">اعتماد</button></form><form method="post" action="{{ url_for('main.petty_cash_receipt_review',receipt_id=r.id,action='return') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input name="manager_note" required placeholder="سبب الإرجاع"><button class="btn warning">إرجاع</button></form><form method="post" action="{{ url_for('main.petty_cash_receipt_review',receipt_id=r.id,action='reject') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input name="manager_note" required placeholder="سبب الرفض"><button class="btn danger">رفض</button></form></div>{% else %}{% if r.attachment_path %}<a class="btn ghost" href="{{ url_for('main.uploads',filename=r.attachment_path) }}" target="_blank">المرفق</a>{% endif %}{% endif %}</td></tr>{% else %}<tr><td colspan="6" class="empty">لا توجد عمليات استلام نثرية لهذا الشهر.</td></tr>{% endfor %}</tbody></table></div></section>
 {% endblock %}

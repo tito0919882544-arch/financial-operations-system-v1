@@ -1,0 +1,12 @@
+<section class="panel" id="overview">
+    <div class="panel-head"><div><span class="section-kicker">التحكم الفوري</span><h3>وضع الصيانة</h3><p class="muted">عند التفعيل يتوقف وصول الأدوار التشغيلية، بينما يبقى السوبر أدمن قادرًا على إدارة النظام.</p></div></div>
+    <form method="post" class="grid-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="save_maintenance"><input type="hidden" name="tab" value="overview">
+      <div><label>حالة النظام</label><select name="enabled"><option value="0" {% if not maintenance.enabled %}selected{% endif %}>يعمل بشكل طبيعي</option><option value="1" {% if maintenance.enabled %}selected{% endif %}>تحت الصيانة</option></select></div>
+      <div><label>المدة المتوقعة بالدقائق</label><input type="number" name="expected_minutes" min="1" max="10080" value="{{ maintenance.expected_minutes }}"></div>
+      <div class="full-row"><label>عنوان شاشة الصيانة</label><input name="maintenance_title" value="{{ maintenance.title }}"></div>
+      <div class="full-row"><label>رسالة الصيانة</label><textarea name="maintenance_message">{{ maintenance.message }}</textarea></div>
+      <div class="form-actions full-row"><button class="btn primary">حفظ حالة الصيانة</button></div>
+    </form>
+    {% if maintenance.enabled %}<div class="balance-strip"><span>بدأت</span><strong>{{ maintenance.started_at }}</strong><span>العودة المتوقعة</span><strong>{{ maintenance.expected_end_at }}</strong><span>المتبقي</span><strong id="maintenance-countdown">--:--</strong></div>{% endif %}
+  </section>

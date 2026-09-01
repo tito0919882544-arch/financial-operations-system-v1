@@ -1,39 +1,11 @@
-{% extends "base.html" %}
-{% block title %}{% if op %}تعديل{% else %}إضافة{% endif %} {{ TYPE_LABELS[op_type] }}{% endblock %}
-{% block page_title %}{% if op %}تعديل {{ op.op_no }}{% else %}إضافة {{ TYPE_LABELS[op_type] }} جديدة{% endif %}{% endblock %}
+{% extends "base.html" %}{% block title %}{% if op %}تعديل{% else %}إضافة{% endif %} {{ TYPE_LABELS[op_type] }}<script>function preflightForm(){const f=document.querySelector('form.form');const checks=[['العنوان',!!f.querySelector('[name=title]').value.trim()],['المبلغ',Number(f.querySelector('[name=amount]').value)>0],['المرفق',!!f.querySelector('[name=attachment]').files.length || {{ 'true' if op and op.attachment_path else 'false' }}]];if({{ 'true' if op_type=='approval' else 'false' }})checks.push(['بند النثرية',!!f.querySelector('[name=category]').value]);const bad=checks.filter(x=>!x[1]);document.getElementById('preflight-local').textContent=bad.length?'✗ '+bad.map(x=>x[0]).join('، '):'✓ العملية جاهزة للإرسال';}</script>{% endblock %}{% block page_title %}{% if op %}تعديل {{ op.op_no }}{% else %}إضافة {{ TYPE_LABELS[op_type] }} جديدة{% endif %}<script>function preflightForm(){const f=document.querySelector('form.form');const checks=[['العنوان',!!f.querySelector('[name=title]').value.trim()],['المبلغ',Number(f.querySelector('[name=amount]').value)>0],['المرفق',!!f.querySelector('[name=attachment]').files.length || {{ 'true' if op and op.attachment_path else 'false' }}]];if({{ 'true' if op_type=='approval' else 'false' }})checks.push(['بند النثرية',!!f.querySelector('[name=category]').value]);const bad=checks.filter(x=>!x[1]);document.getElementById('preflight-local').textContent=bad.length?'✗ '+bad.map(x=>x[0]).join('، '):'✓ العملية جاهزة للإرسال';}</script>{% endblock %}
 {% block content %}
-<section class="panel form-panel">
-<form method="post" enctype="multipart/form-data" class="form grid-form">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <div>
-        <label>العنوان</label>
-        <input name="title" value="{{ op.title if op else TYPE_LABELS[op_type] }}" required>
-    </div>
-    <div>
-        <label>البند / التصنيف</label>
-        <input name="category" value="{{ op.category if op else '' }}" placeholder="مثال: اتصالات / وقود / إيراد يومي">
-    </div>
-    <div>
-        <label>المبلغ</label>
-        <input name="amount" type="number" step="0.01" value="{{ op.amount if op else '' }}" required>
-    </div>
-    <div>
-        <label>المبلغ المخصص للبند - اختياري</label>
-        <input name="allocated_amount" type="number" step="0.01" value="{{ op.allocated_amount if op and op.allocated_amount else '' }}">
-    </div>
-    <div class="full-row">
-        <label>الوصف / الملاحظات</label>
-        <textarea name="description" rows="5">{{ op.description if op else '' }}</textarea>
-    </div>
-    <div class="full-row">
-        <label>المرفق</label>
-        <input name="attachment" type="file" accept=".pdf,.jpg,.jpeg,.png">
-        {% if op and op.attachment_path %}<small>المرفق الحالي: {{ op.attachment_path }}</small>{% endif %}
-    </div>
-    <div class="form-actions full-row">
-        <button class="btn primary">حفظ وإرسال للمراجعة</button>
-        <a class="btn ghost" href="{{ url_for('main.operations_list', op_type=op_type) }}">رجوع</a>
-    </div>
-</form>
-</section>
-{% endblock %}
+<section class="panel form-panel"><div class="alert info"><strong>مساعدة سريعة:</strong> <a href="{{ url_for('main.contextual_help',topic='approval' if op_type=='approval' else 'due') }}" target="_blank">كيف أكمل هذه العملية؟</a></div><div class="form-context"><span>رصيد النثرية الفعلي الحالي</span><strong>{{ "{:,.0f}".format(actual) }}</strong></div>
+<form method="post" enctype="multipart/form-data" class="form grid-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><div><label>العنوان</label><input name="title" value="{{ op.title if op else ('طلب تصديق من النثرية' if op_type=='approval' else 'إضافة مستحق / سلفة للنثرية') }}" required></div>
+{% if op_type=='approval' %}<div><label>بند النثرية</label><select name="category" required><option value="">اختر البند</option>{% for c in categories %}<option value="{{ c.category }}" {% if op and op.category==c.category %}selected{% endif %}>{{ c.category }} — {{ "{:,.0f}".format(c.allocated_amount) }}</option>{% endfor %}</select></div>{% else %}<div><label>نوع الإضافة</label><input value="مستحق / سلفة تضاف إلى رصيد النثرية" disabled><input type="hidden" name="category" value="تمويل النثرية"></div>{% endif %}
+<div><label>المبلغ</label><input name="amount" type="number" min="1" step="1" value="{{ op.amount if op else '' }}" required></div>
+<div><label>المرفق الرسمي</label><input id="operation-attachment" name="attachment" type="file" accept=".pdf,.jpg,.jpeg,.png" capture="environment" {% if not op %}required{% endif %}><small>من الهاتف يمكنك اختيار الكاميرا لتصوير المستند مباشرة.</small>{% if op and op.attachment_path %}<small>المرفق الحالي: {{ op.attachment_path }}</small>{% endif %}</div>
+<div><label>النموذج الرسمي</label>{% if templates %}<select name="document_template_id"><option value="">اختر النموذج (اختياري)</option>{% for t in templates %}<option value="{{ t.id }}">{{ t.title }}</option>{% endfor %}</select>{% else %}<small>لا توجد نماذج مركزية مفعلة.</small>{% endif %}</div>
+<div class="full-row"><label>الوصف / الملاحظات</label><textarea name="description" rows="5" placeholder="أدخل التفاصيل اللازمة للعملية.">{{ op.description if op else '' }}</textarea></div>
+<div class="form-actions full-row"><button type="button" class="btn ghost" onclick="preflightForm()">فحص الجاهزية</button><span id="preflight-local" class="muted"></span><button class="btn primary">حفظ وإرسال للمراجعة</button><a class="btn ghost" href="{{ url_for('main.operations_list',op_type=op_type) }}">رجوع</a></div></form></section>
+<script>function preflightForm(){const f=document.querySelector('form.form');const checks=[['العنوان',!!f.querySelector('[name=title]').value.trim()],['المبلغ',Number(f.querySelector('[name=amount]').value)>0],['المرفق',!!f.querySelector('[name=attachment]').files.length || {{ 'true' if op and op.attachment_path else 'false' }}]];if({{ 'true' if op_type=='approval' else 'false' }})checks.push(['بند النثرية',!!f.querySelector('[name=category]').value]);const bad=checks.filter(x=>!x[1]);document.getElementById('preflight-local').textContent=bad.length?'✗ '+bad.map(x=>x[0]).join('، '):'✓ العملية جاهزة للإرسال';}</script>{% endblock %}

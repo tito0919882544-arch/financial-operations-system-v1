@@ -1,16 +1,2 @@
-{% extends "base.html" %}
-{% block title %}إعدادات المحطة{% endblock %}
-{% block page_title %}إعدادات المحطة{% endblock %}
-{% block content %}
-<section class="panel form-panel">
-<form method="post" class="form grid-form">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <div><label>اسم المحطة</label><input name="name" value="{{ station.name }}" required></div>
-    <div><label>اسم الشركة/الجهة</label><input name="company_name" value="{{ station.company_name }}" required></div>
-    <div><label>اسم المدير</label><input name="manager_name" value="{{ station.manager_name or '' }}"></div>
-    <div><label>الهاتف</label><input name="phone" value="{{ station.phone or '' }}"></div>
-    <div class="full-row"><label>العنوان</label><input name="address" value="{{ station.address or '' }}"></div>
-    <div class="form-actions full-row"><button class="btn primary">حفظ الإعدادات</button></div>
-</form>
-</section>
-{% endblock %}
+{% extends "base.html" %}{% block title %}إعدادات المحطة{% endblock %}{% block page_title %}إعدادات المحطة{% endblock %}
+{% block content %}<section class="panel form-panel"><form method="post" class="form grid-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><div><label>اسم المحطة</label><input name="name" value="{{ station.name }}" required></div><div><label>الجهة / الشركة</label><input name="company_name" value="{{ station.company_name or '' }}"></div><div><label>اسم المدير</label><input name="manager_name" value="{{ station.manager_name or '' }}"></div><div><label>الهاتف</label><input name="phone" value="{{ station.phone or '' }}"></div><div class="full-row"><label>العنوان</label><input name="address" value="{{ station.address or '' }}"></div><div class="form-actions full-row"><button class="btn primary">حفظ الإعدادات</button></div></form></section>{% endblock %}

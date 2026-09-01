@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}مركز الصيانة والتشغيل{% endblock %}
+{% block page_title %}مركز الصيانة والتشغيل{% endblock %}
+{% block content %}
+<div class="maintenance-center">
+{% include 'maintenance_nav.html' %}
+<div class="dashboard-intro maintenance-dashboard-intro">
+  <div><span class="section-kicker">لوحة التحكم</span><h3>إدارة وتشغيل النظام</h3><p class="muted">كل وحدة تفتح في شاشة مستقلة. هذا يمنع ازدحام الواجهة ويجعل الوصول للوظيفة المطلوبة مباشرًا.</p></div>
+  <div class="period-chip"><span>حالة النظام</span><strong>{{ 'تحت الصيانة' if maintenance.enabled else 'يعمل بشكل طبيعي' }}</strong></div>
+</div>
+<div class="grid cards-grid admin-cards">
+  <a class="stat-card blue maintenance-card-link" href="{{ url_for('main.maintenance_center',section='stations') }}"><span>المحطات</span><strong>{{ stations|length }}</strong><small>{{ stations|selectattr('active')|list|length }} نشطة</small></a>
+  <a class="stat-card purple maintenance-card-link" href="{{ url_for('main.maintenance_center',section='users') }}"><span>المستخدمون</span><strong>{{ users|length }}</strong><small>{{ users|selectattr('active')|list|length }} نشطون</small></a>
+  <a class="stat-card cyan maintenance-card-link" href="{{ url_for('main.maintenance_center',section='sessions') }}"><span>الجلسات النشطة</span><strong>{{ sessions|length }}</strong><small>الوصول الحالي</small></a>
+  <a class="stat-card green maintenance-card-link" href="{{ url_for('main.maintenance_center',section='passwords') }}"><span>طلبات الاستعادة</span><strong>{{ pending_resets|length }}</strong><small>تحتاج معالجة</small></a>
+  <a class="stat-card blue maintenance-card-link" href="{{ url_for('main.maintenance_center',section='petty') }}"><span>بنود النثرية</span><strong>{{ petty_rows|length }}</strong><small>للشهر المحدد</small></a>
+  <a class="stat-card purple maintenance-card-link" href="{{ url_for('main.maintenance_center',section='system') }}"><span>سلامة النظام</span><strong>{{ 'سليم' if health.database and health.uploads and health.backups and health.required_tables and health.audit_immutable else 'مراجعة' }}</strong><small>التشخيص والنسخ</small></a>
+</div>
+<div class="maintenance-module-grid">
+{% for slug,icon,label,desc in [
+('overview','🛠️','وضع الصيانة','إيقاف وتشغيل النظام وإدارة رسالة الصيانة.'),('stations','🏢','إدارة المحطات','إنشاء المحطات وتعديلها وتفعيلها أو إيقافها.'),('users','👥','إدارة المستخدمين','الحسابات والأدوار والمحطات وعناوين IP.'),('passwords','🔑','استعادة كلمات المرور','مراجعة طلبات إعادة التعيين واعتمادها أو رفضها.'),('sessions','🟢','الجلسات النشطة','مراجعة الجلسات وإنهاء جلسة محددة.'),('identity','🏷️','الهوية والمسميات','إعداد هوية النظام ومسميات الواجهة.'),('themes','🎨','التصاميم','إدارة التصميم النشط والتصاميم المخصصة.'),('petty','💰','إدارة النثرية','تهيئة بنود وسقوف النثرية حسب المحطة والشهر.'),('templates','📄','النماذج المركزية','رفع وإدارة النماذج الرسمية المركزية.'),('system','💾','النسخ والتشخيص','النسخ الاحتياطي والاستعادة وفحص صحة النظام.'),('audit','📋','سجل التدقيق','مراجعة الأحداث والعمليات المسجلة.'),
+] %}
+<a class="maintenance-module-card" href="{{ url_for('main.maintenance_center',section=slug) }}"><span class="module-icon">{{ icon }}</span><span><strong>{{ label }}</strong><small>{{ desc }}</small></span><b>فتح ←</b></a>
+{% endfor %}
+</div>
+</div>
+{% endblock %}

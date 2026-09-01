@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}مركز المساعدة{% endblock %}
+{% block page_title %}مركز المساعدة{% endblock %}
+{% block content %}
+<section class="panel help-hero">
+  <div><span class="section-kicker">المساعدة والإرشاد</span><h3>كل ما تحتاجه لإكمال عملك دون توقف</h3><p>اختر القسم الذي تعمل عليه الآن. ستجد الخطوات الأساسية، وما الذي يجب أن يحدث بعد ذلك، وروابط مباشرة للمساعدة السياقية.</p></div>
+  <div class="help-hero-icon">?</div>
+</section>
+<div id="help-topics" class="help-grid">
+{% for topic in topics %}
+<a class="help-topic-card" href="{{ url_for('main.contextual_help', topic=topic.key) }}">
+  <div class="help-topic-icon">{{ topic.icon }}</div>
+  <div><h3>{{ topic.title }}</h3><p>{{ topic.summary }}</p><span class="help-open">فتح الدليل ←</span></div>
+</a>
+{% endfor %}
+</div>
+<section id="help-principles" class="panel help-principles">
+  <div class="panel-head"><div><span class="section-kicker">مبدأ الاستخدام</span><h3>إذا توقفت في أي مرحلة</h3></div></div>
+  <div class="help-principle-grid">
+    <div><strong>١</strong><span>اعرف المرحلة الحالية للعملية.</span></div>
+    <div><strong>٢</strong><span>راجع ما ينقصك في الصفحة نفسها.</span></div>
+    <div><strong>٣</strong><span>استخدم «استكمال العملية» بدل إعادة إنشائها.</span></div>
+    <div><strong>٤</strong><span>افتح مركز الإشعارات لمعرفة ما يحتاج انتباهك.</span></div>
+  </div>
+</section>
+{% endblock %}

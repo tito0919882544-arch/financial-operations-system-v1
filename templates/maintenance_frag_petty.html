@@ -1,0 +1,15 @@
+<section class="panel" id="petty">
+    <div class="panel-head"><div><span class="section-kicker">الإدارة المالية المركزية</span><h3>تهيئة بنود النثرية للمحطات</h3><p class="muted"><strong>السوبر أدمن وحده</strong> يضيف البنود ويحدد سقف كل بند لكل محطة ولكل شهر. لا يوجد سقف ثابت مفروض من النظام، ولا تؤدي التهيئة إلى إضافة رصيد فعلي.</p></div></div>
+    <form method="get" class="search-form"><select name="station_id" required>{% for st in stations %}<option value="{{ st.id }}" {% if selected_station_id==st.id %}selected{% endif %}>{{ st.name }} — {{ st.code }}</option>{% endfor %}</select><input name="month" value="{{ selected_month }}" pattern="\\d{4}-\\d{2}" placeholder="YYYY-MM"><button class="btn ghost">عرض التهيئة</button></form>
+    {% if selected_station_id %}
+    <hr class="soft-divider"><form method="post" action="{{ url_for('main.maintenance_petty_config') }}" class="form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="station_id" value="{{ selected_station_id }}"><input type="hidden" name="month_key" value="{{ selected_month }}">
+      <div class="table-wrap"><table class="table"><thead><tr><th>البند</th><th>السقف المخصص</th><th>المصروف الحالي</th><th>المتبقي</th></tr></thead><tbody>
+      {% for r in petty_rows %}<tr><td><input type="hidden" name="petty_id_{{ loop.index }}" value="{{ r.id }}"><input name="petty_category_{{ loop.index }}" value="{{ r.category }}" required></td><td><input name="petty_amount_{{ loop.index }}" type="number" min="0" step="1" value="{{ r.allocated_amount }}" required></td><td>{{ "{:,.0f}".format(r.spent_amount) }}</td><td>{{ "{:,.0f}".format(r.allocated_amount-r.spent_amount) }}</td></tr>{% else %}<tr><td colspan="4" class="empty">لا توجد بنود مهيأة لهذا الشهر. أضف أول بند أدناه.</td></tr>{% endfor %}
+      </tbody></table></div>
+      <div class="grid-form"><div><label>بند جديد</label><input name="new_category" placeholder="مثلاً: وقود المولد"></div><div><label>السقف</label><input name="new_amount" type="number" min="0" step="1" placeholder="0"></div></div>
+      <div class="balance-strip"><span>إجمالي السقف المدخل</span><strong id="petty-config-total">0</strong><span>الرصيد الفعلي</span><strong>لا يتغير بالتهيئة</strong></div>
+      <div class="form-actions"><button class="btn primary">حفظ تهيئة النثرية</button></div>
+    </form>
+    <hr class="soft-divider"><h4>طلبات استلام / تغذية النثرية</h4><div class="table-wrap"><table class="table"><thead><tr><th>التاريخ</th><th>المبلغ</th><th>البيان</th><th>الحالة</th><th>المسجل</th></tr></thead><tbody>{% for r in petty_receipts %}<tr><td>{{ r.created_at }}</td><td>{{ "{:,.0f}".format(r.amount) }}</td><td>{{ r.note }}</td><td>{{ {"pending_review":"قيد المراجعة","approved":"معتمد","returned":"مرتجع للتصحيح","rejected":"مرفوض"}.get(r.status,r.status) }}</td><td>{{ r.creator_name or '-' }}</td></tr>{% else %}<tr><td colspan="5" class="empty">لا توجد طلبات استلام لهذا الشهر.</td></tr>{% endfor %}</tbody></table></div>
+    {% else %}<div class="empty">لا توجد محطة لاختيار تهيئتها. أنشئ محطة أولاً.</div>{% endif %}
+  </section>

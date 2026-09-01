@@ -1,0 +1,16 @@
+<section class="panel" id="stations">
+    <div class="panel-head"><div><span class="section-kicker">إدارة المحطات</span><h3>إنشاء وإدارة المحطات</h3><p class="muted">السوبر أدمن ينشئ المحطات أولاً، ثم يربط المستخدمين ويهيئ النثرية لكل محطة وشهر.</p></div></div>
+    <form method="post" action="{{ url_for('main.stations') }}" class="grid-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="next" value="maintenance">
+      <div><label>رمز المحطة</label><input name="code" maxlength="12" required placeholder="مثال: DLG"></div><div><label>اسم المحطة</label><input name="name" required></div>
+      <div><label>الجهة / الشركة</label><input name="company_name"></div><div><label>اسم المدير</label><input name="manager_name"></div>
+      <div><label>العنوان</label><input name="address"></div><div><label>الهاتف</label><input name="phone"></div>
+      <div class="form-actions full-row"><button class="btn primary">إنشاء محطة</button></div>
+    </form>
+    <hr class="soft-divider">
+    <div class="table-wrap"><table class="table"><thead><tr><th>البيانات</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody>
+      {% for row in stations %}
+      <tr id="station-{{ row.id }}"><td><form method="post" action="{{ url_for('main.station_edit',station_id=row.id) }}" class="grid-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="next" value="maintenance"><input name="code" value="{{ row.code }}" required><input name="name" value="{{ row.name }}" required><input name="company_name" value="{{ row.company_name or '' }}" placeholder="الشركة"><input name="manager_name" value="{{ row.manager_name or '' }}" placeholder="المدير"><input name="address" value="{{ row.address or '' }}" placeholder="العنوان"><input name="phone" value="{{ row.phone or '' }}" placeholder="الهاتف"><button class="btn ghost">حفظ بيانات المحطة</button></form></td><td>{% if row.active %}<span class="status status-ok">نشطة</span>{% else %}<span class="status status-danger">موقوفة</span>{% endif %}</td><td><form method="post" action="{{ url_for('main.station_toggle',station_id=row.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="next" value="maintenance"><button class="btn warning">{{ 'إيقاف' if row.active else 'تفعيل' }}</button></form></td></tr>
+      {% else %}<tr><td colspan="3" class="empty">لا توجد محطات. أنشئ أول محطة من النموذج أعلاه.</td></tr>{% endfor %}
+    </tbody></table></div>
+  </section>

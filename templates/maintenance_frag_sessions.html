@@ -1,0 +1,7 @@
+<section class="panel" id="sessions">
+    <div class="panel-head"><div><span class="section-kicker">الأمان</span><h3>الجلسات النشطة</h3><p class="muted">كل مستخدم يسمح له بجلسة نشطة واحدة. يمكن للسوبر أدمن إنهاء جلسة مستخدم آخر.</p></div></div>
+    <div class="table-wrap"><table class="table"><thead><tr><th>المستخدم</th><th>الدور</th><th>المحطة</th><th>IP</th><th>آخر نشاط</th><th>الإجراء</th></tr></thead><tbody>
+      {% for r in sessions %}<tr><td>{{ r.full_name }}<br><small>{{ r.username }}</small></td><td>{{ ROLE_LABELS[r.role] }}</td><td>{{ r.station_name or 'إدارة النظام' }}</td><td>{{ r.ip_address or '-' }}</td><td>{{ r.last_seen }}</td><td>{% if r.user_id != current_user.id %}<form method="post" action="{{ url_for('main.terminate_session',session_id=r.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn warning">إنهاء الجلسة</button></form>{% else %}<span class="status status-ok">جلستك الحالية</span>{% endif %}</td></tr>
+      {% else %}<tr><td colspan="6" class="empty">لا توجد جلسات نشطة.</td></tr>{% endfor %}
+    </tbody></table></div>
+  </section>

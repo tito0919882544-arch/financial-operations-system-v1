@@ -1,25 +1,2 @@
-{% extends "base.html" %}
-{% block title %}سجل الحركة{% endblock %}
-{% block page_title %}سجل الحركة والتدقيق{% endblock %}
-{% block content %}
-<section class="panel">
-<table class="table compact">
-    <thead><tr><th>العملية</th><th>النوع</th><th>الإجراء</th><th>من حالة</th><th>إلى حالة</th><th>المستخدم</th><th>IP</th><th>التاريخ</th><th>ملاحظة</th></tr></thead>
-    <tbody>
-    {% for row in rows %}
-    <tr>
-        <td>{{ row.op_no or '-' }}</td>
-        <td>{{ TYPE_LABELS.get(row.op_type, '-') }}</td>
-        <td>{{ row.action }}</td>
-        <td>{{ STATUS_LABELS.get(row.old_status, row.old_status or '-') }}</td>
-        <td>{{ STATUS_LABELS.get(row.new_status, row.new_status or '-') }}</td>
-        <td>{{ row.user_name or '-' }}</td>
-        <td>{{ row.ip_address or '-' }}</td>
-        <td>{{ row.created_at }}</td>
-        <td>{{ row.note or '-' }}</td>
-    </tr>
-    {% else %}<tr><td colspan="9" class="empty">لا يوجد سجل حركة.</td></tr>{% endfor %}
-    </tbody>
-</table>
-</section>
-{% endblock %}
+{% extends "base.html" %}{% block title %}سجل الحركة والتدقيق{% endblock %}{% block page_title %}سجل الحركة والتدقيق{% endblock %}
+{% block content %}<section class="panel"><div class="panel-head"><div><span class="section-kicker">رقابة</span><h3>سجل النشاط</h3></div></div><div class="table-wrap"><table class="table compact"><thead><tr><th>الوقت</th><th>المستخدم</th><th>المحطة</th><th>نوع الحدث</th><th>التفاصيل</th><th>IP</th></tr></thead><tbody>{% for row in rows %}<tr><td>{{ row.created_at }}</td><td>{{ row.user_name or '-' }}</td><td>{{ row.station_name or 'إدارة النظام' }}</td><td>{{ row.event_type }}</td><td>{{ row.description }}</td><td>{{ row.ip_address or '-' }}</td></tr>{% else %}<tr><td colspan="6" class="empty">لا يوجد نشاط.</td></tr>{% endfor %}</tbody></table></div></section>{% endblock %}

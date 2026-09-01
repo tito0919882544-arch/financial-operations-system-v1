@@ -1,0 +1,23 @@
+<section class="panel" id="users">
+    <div class="panel-head"><div><span class="section-kicker">إدارة الوصول</span><h3>المستخدمون والأدوار وIP</h3><p class="muted">لا يتم إنشاء مدير محطة أو متحصل تجريبي تلقائيًا. السوبر أدمن هو من ينشئ الحسابات ويربطها بالمحطات.</p></div></div>
+    <form method="post" action="{{ url_for('main.users') }}" class="grid-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="next" value="maintenance">
+      <div><label>اسم المستخدم</label><input name="username" required></div><div><label>الاسم الكامل</label><input name="full_name" required></div><div><label>كلمة المرور المؤقتة</label><input name="password" type="password" minlength="8" required></div>
+      <div><label>الدور</label><select name="role" required><option value="collector">متحصل</option><option value="manager">مدير محطة</option><option value="super_admin">مدير النظام</option></select></div>
+      <div><label>المحطة</label><select name="station_id"><option value="">بدون محطة</option>{% for s in stations if s.active %}<option value="{{ s.id }}">{{ s.name }} — {{ s.code }}</option>{% endfor %}</select></div>
+      <div><label>IP مسموح — اختياري</label><input name="allowed_ip" placeholder="192.168.x.x"></div>
+      <div class="form-actions full-row"><button class="btn primary">إنشاء مستخدم</button></div>
+    </form>
+    <hr class="soft-divider">
+    <div class="table-wrap"><table class="table"><thead><tr><th>المستخدم</th><th>الدور والمحطة</th><th>IP</th><th>الحالة</th><th>الإدارة</th></tr></thead><tbody>
+    {% for u in users %}
+      <tr id="user-{{ u.id }}"><td><strong>{{ u.full_name }}</strong><br><small>{{ u.username }}</small></td><td>{{ ROLE_LABELS[u.role] }}<br>{{ u.station_name or 'إدارة النظام' }}</td>
+      <td><form method="post" action="{{ url_for('main.user_ip',user_id=u.id) }}" class="row-actions"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="next" value="maintenance"><input name="allowed_ip" value="{{ u.allowed_ip or '' }}" placeholder="بدون تقييد"><button class="btn ghost">حفظ IP</button></form></td>
+      <td>{% if u.active %}<span class="status status-ok">نشط</span>{% else %}<span class="status status-danger">معطل</span>{% endif %}</td>
+      <td><details><summary class="btn ghost">فتح الإدارة</summary><form method="post" action="{{ url_for('main.user_edit',user_id=u.id) }}" class="grid-form" style="margin-top:8px"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input name="full_name" value="{{ u.full_name }}" required><select name="role">{% for k,v in ROLE_LABELS.items() %}<option value="{{ k }}" {% if u.role==k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select><select name="station_id"><option value="">بدون محطة</option>{% for s in stations if s.active %}<option value="{{ s.id }}" {% if u.station_id==s.id %}selected{% endif %}>{{ s.name }}</option>{% endfor %}</select><button class="btn ghost">حفظ البيانات</button></form>
+      <form method="post" action="{{ url_for('main.reset_password',user_id=u.id) }}" class="row-actions" style="margin-top:8px"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="next" value="maintenance"><input name="new_password" type="password" minlength="8" placeholder="كلمة مرور جديدة" required><button class="btn warning">إعادة تعيين كلمة المرور</button></form>
+      <form method="post" action="{{ url_for('main.transfer_user',user_id=u.id) }}" class="row-actions" style="margin-top:8px">{% if u.role!='super_admin' %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="next" value="maintenance"><select name="station_id" required>{% for s in stations if s.active %}<option value="{{ s.id }}" {% if u.station_id==s.id %}selected{% endif %}>نقل إلى: {{ s.name }}</option>{% endfor %}</select><button class="btn ghost">نقل المستخدم</button>{% endif %}</form>
+      {% if u.id != current_user.id %}<form method="post" action="{{ url_for('main.user_toggle',user_id=u.id) }}" style="margin-top:8px"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="next" value="maintenance"><button class="btn warning">{{ 'تعطيل الحساب' if u.active else 'تفعيل الحساب' }}</button></form>{% endif %}</details></td></tr>
+    {% else %}<tr><td colspan="5" class="empty">لا يوجد مستخدمون.</td></tr>{% endfor %}
+    </tbody></table></div>
+  </section>

@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}{{ topic.title }} — مركز المساعدة{% endblock %}
+{% block page_title %}{{ topic.title }}{% endblock %}
+{% block content %}
+<section class="panel help-detail">
+  <div class="help-detail-head"><div class="help-topic-icon">{{ topic.icon }}</div><div><span class="section-kicker">مساعدة سياقية</span><h3>{{ topic.title }}</h3><p>{{ topic.summary }}</p></div></div>
+  {% if topic.body %}<div class="help-note"><strong>إرشاد النظام</strong><p>{{ topic.body }}</p></div>{% endif %}
+  {% if topic.steps %}<div class="help-steps"><h4>كيف أكمل؟</h4>{% for step in topic.steps %}<div class="help-step"><strong>{{ loop.index }}</strong><span>{{ step }}</span></div>{% endfor %}</div>{% endif %}
+  {% if topic.next %}<div class="help-next"><strong>الخطوة التالية</strong><p>{{ topic.next }}</p></div>{% endif %}
+  <div class="form-actions"><a class="btn ghost" href="{{ url_for('main.help_center') }}">العودة إلى مركز المساعدة</a>{% if topic.key == 'approval' %}<a class="btn primary" href="{{ url_for('main.operations_list',op_type='approval') }}">طلبات التصديق</a>{% elif topic.key == 'petty_cash' %}<a class="btn primary" href="{{ url_for('main.petty_cash') }}">النثرية</a>{% elif topic.key == 'due' %}<a class="btn primary" href="{{ url_for('main.operations_list',op_type='due') }}">المستحقات والسلف</a>{% elif topic.key == 'notifications' %}<a class="btn primary" href="{{ url_for('main.notifications') }}">الإشعارات</a>{% elif topic.key == 'search' %}<a class="btn primary" href="{{ url_for('main.global_search') }}">البحث الشامل</a>{% endif %}</div>
+</section>
+{% endblock %}
